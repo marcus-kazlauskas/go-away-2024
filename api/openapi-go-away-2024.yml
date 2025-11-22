@@ -1,0 +1,154 @@
+openapi: 3.0.4
+info:
+  title: Advent of Code (go-away-2024)
+  version: 1.0.0
+tags:
+  - name: AdventOfCode
+    description: Tasks management
+paths:
+  /tasks/create:
+    post: 
+      tags:
+        - AdventOfCode
+      summary: Create task to solve
+      operationId: postTask
+      parameters:
+        - name: year
+          in: query
+          description: Year of AoC challenge
+          required: true
+          schema: 
+            type: integer
+            example: 2024
+        - name: number
+          in: query
+          description: Puzzle number
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - name: part
+          in: query
+          description: Puzzle part (1 or 2)
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        description: Data for task solving
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                filename: 
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Successful operation 
+          content:
+            applicaton/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "400":
+          description: Bad Request
+          content:
+            applicaton/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal Server Error
+          content:
+            applicaton/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /tasks/{id}:
+    get:
+      tags:
+        - AdventOfCode
+      summary: Get task status
+      operationId: getTask
+      parameters:
+        - name: id
+          in: path
+          description: Task ID
+          required: true
+          schema:
+            format: uuid
+            type: string
+            example: 123e4567-e89b-12d3-a456-426655440000
+      responses:
+        "200":
+          description: Successful operation 
+          content:
+            applicaton/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "400":
+          description: Bad Request
+          content:
+            applicaton/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal Server Error
+          content:
+            applicaton/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    Task:
+      required:
+        - id 
+        - status
+        - message
+        - createdAt
+      type: object
+      properties:
+        id:
+          description: Task ID
+          format: uuid
+          type: string
+          example: 123e4567-e89b-12d3-a456-426655440000
+        status:
+          description: Task solution status
+          type: string
+          enum:
+            - CREATED 
+            - IN_PROGRESS
+            - SOLVED 
+            - ERROR 
+          example: SOLVED
+        result:
+          description: Task solution result
+          type: string
+          example: 666
+        message: 
+          description: Task solution message
+          type: string
+          example: Day 1 Part 1 from AoC 2024 successfully solved with the following result
+        createdAt:
+          description: Task creation date 
+          type: string
+          format: date-time 
+          example: 2025-11-22T00:00:00.000+03:00
+        startedAt:
+          description: Start date of the task solving
+          type: string
+          format: date-time 
+          example: 2025-11-22T00:01:00.000+03:00
+        completedAt:
+          description: Completion date of the task solving
+          type: string
+          format: date-time 
+          example: 2025-11-22T00:02:00.000+03:00
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          description: Service error response
+          type: string
+          example: Puzzle is not supported

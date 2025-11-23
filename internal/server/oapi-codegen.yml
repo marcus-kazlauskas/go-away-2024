@@ -1,0 +1,5 @@
+package: server
+generate:
+  fiber-server: true
+  models: true
+output: aoc.gen.go

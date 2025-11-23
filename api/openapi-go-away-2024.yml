@@ -4,9 +4,9 @@ info:
   version: 1.0.0
 tags:
   - name: AdventOfCode
-    description: Tasks management
+    description: Task management
 paths:
-  /tasks/create:
+  /task/create:
     post: 
       tags:
         - AdventOfCode
@@ -20,9 +20,9 @@ paths:
           schema: 
             type: integer
             example: 2024
-        - name: number
+        - name: day
           in: query
-          description: Puzzle number
+          description: Puzzle day
           required: true
           schema:
             type: integer
@@ -52,19 +52,13 @@ paths:
             applicaton/json:
               schema:
                 $ref: "#/components/schemas/Task"
-        "400":
-          description: Bad Request
+        default:
+          description: Unexpected error
           content:
             applicaton/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
-          description: Internal Server Error
-          content:
-            applicaton/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-  /tasks/{id}:
+                $ref: "#/components/schemas/Error"
+  /task/{id}:
     get:
       tags:
         - AdventOfCode
@@ -86,18 +80,12 @@ paths:
             applicaton/json:
               schema:
                 $ref: "#/components/schemas/Task"
-        "400":
-          description: Bad Request
+        default:
+          description: Unexpected error
           content:
             applicaton/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
-          description: Internal Server Error
-          content:
-            applicaton/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/components/schemas/Error"
 components:
   schemas:
     Task:
@@ -118,8 +106,8 @@ components:
           type: string
           enum:
             - CREATED 
-            - IN_PROGRESS
-            - SOLVED 
+            - STARTED
+            - COMPLITED
             - ERROR 
           example: SOLVED
         result:
@@ -145,10 +133,17 @@ components:
           type: string
           format: date-time 
           example: 2025-11-22T00:02:00.000+03:00
-    ErrorResponse:
+    Error:
+      required:
+        - code 
+        - message 
       type: object
       properties:
+        code: 
+          description: Error code 
+          type: integer
+          example: 500
         message:
-          description: Service error response
+          description: Error message
           type: string
           example: Puzzle is not supported

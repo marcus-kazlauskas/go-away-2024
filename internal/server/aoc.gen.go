@@ -39,7 +39,7 @@ type Task struct {
 	CreatedAt time.Time `json:"createdAt"`
 
 	// Id Task ID
-	Id openapi_types.UUID `json:"id"`
+	Id string `json:"id"`
 
 	// Message Task solution message
 	Message string `json:"message"`
@@ -84,7 +84,7 @@ type ServerInterface interface {
 	PostTask(c *fiber.Ctx, params PostTaskParams) error
 	// Get task status
 	// (GET /task/{id})
-	GetTask(c *fiber.Ctx, id openapi_types.UUID) error
+	GetTask(c *fiber.Ctx, id string) error
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -162,7 +162,7 @@ func (siw *ServerInterfaceWrapper) GetTask(c *fiber.Ctx) error {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id openapi_types.UUID
+	var id string
 
 	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Params("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
 	if err != nil {

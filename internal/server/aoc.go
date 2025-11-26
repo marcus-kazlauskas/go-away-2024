@@ -7,8 +7,6 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
-	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 var _ ServerInterface = (*Server)(nil)
@@ -20,7 +18,7 @@ type Server struct {
 func NewAoCServer() *Server {
 	return &Server{
 		Task: Task{
-			Id:          uuid.New(),
+			Id:          "1",
 			Status:      CREATED,
 			Result:      nil,
 			Message:     "Day 1 Part 1 from AoC 2024 accepted",
@@ -44,7 +42,7 @@ func (s *Server) PostTask(c *fiber.Ctx, params PostTaskParams) error {
 	return c.Status(http.StatusOK).JSON(s.Task)
 }
 
-func (s *Server) GetTask(c *fiber.Ctx, id openapi_types.UUID) error {
+func (s *Server) GetTask(c *fiber.Ctx, id string) error {
 	// logic is under construction)
 	return c.Status(http.StatusOK).JSON(s.Task)
 }

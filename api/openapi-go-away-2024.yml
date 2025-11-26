@@ -70,9 +70,9 @@ paths:
           description: Task ID
           required: true
           schema:
-            format: uuid
             type: string
-            example: 123e4567-e89b-12d3-a456-426655440000
+            pattern: ^\d+$
+            example: 666
       responses:
         "200":
           description: Successful operation 
@@ -98,9 +98,9 @@ components:
       properties:
         id:
           description: Task ID
-          format: uuid
           type: string
-          example: 123e4567-e89b-12d3-a456-426655440000
+          pattern: ^\d+$
+          example: 666
         status:
           description: Task solution status
           type: string

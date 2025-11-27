@@ -31,7 +31,7 @@ func NewAoCServer() *Server {
 
 func SendServerError(c *fiber.Ctx, code int, message string) error {
 	serverErr := Error{
-		Code:    code,
+		Code:    int32(code),
 		Message: message,
 	}
 	return c.Status(code).JSON(serverErr)

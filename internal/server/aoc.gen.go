@@ -24,7 +24,7 @@ const (
 // Error defines model for Error.
 type Error struct {
 	// Code Error code
-	Code int `json:"code"`
+	Code int32 `json:"code"`
 
 	// Message Error message
 	Message string `json:"message"`
@@ -65,13 +65,13 @@ type PostTaskMultipartBody struct {
 // PostTaskParams defines parameters for PostTask.
 type PostTaskParams struct {
 	// Year Year of AoC challenge
-	Year int `form:"year" json:"year"`
+	Year int32 `form:"year" json:"year"`
 
 	// Day Puzzle day
-	Day int `form:"day" json:"day"`
+	Day int32 `form:"day" json:"day"`
 
 	// Part Puzzle part (1 or 2)
-	Part int `form:"part" json:"part"`
+	Part int32 `form:"part" json:"part"`
 }
 
 // PostTaskMultipartRequestBody defines body for PostTask for multipart/form-data ContentType.

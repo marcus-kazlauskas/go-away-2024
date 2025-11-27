@@ -19,6 +19,7 @@ paths:
           required: true
           schema: 
             type: integer
+            format: int32
             example: 2024
         - name: day
           in: query
@@ -26,6 +27,7 @@ paths:
           required: true
           schema:
             type: integer
+            format: int32
             example: 1
         - name: part
           in: query
@@ -33,6 +35,7 @@ paths:
           required: true
           schema:
             type: integer
+            format: int32
             example: 1
       requestBody:
         description: Data for task solving
@@ -142,6 +145,7 @@ components:
         code: 
           description: Error code 
           type: integer
+          format: int32
           example: 500
         message:
           description: Error message

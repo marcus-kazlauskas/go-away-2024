@@ -1,0 +1,11 @@
+server:
+  host: localhost
+  port: 8090
+database:
+  driver: postgres
+  host: localhost
+  port: 5432
+  user: aoc-2024
+  password: aoc-2024
+  name: advent-of-code
+  ssl-mode: disable

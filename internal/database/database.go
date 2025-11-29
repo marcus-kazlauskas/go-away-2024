@@ -21,6 +21,7 @@ func Connect() {
 		config.DatabaseCfg.Name,
 		config.DatabaseCfg.SslMode,
 	)
+
 	DB = sqlx.MustConnect(config.DatabaseCfg.Driver, dsn)
 	log.Infof("Connected to database: %s", dsn)
 }

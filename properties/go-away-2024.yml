@@ -9,3 +9,11 @@ database:
   password: aoc-2024
   name: advent-of-code
   ssl-mode: disable
+s3:
+  host: localhost
+  port: 9000
+  bucket: tasks
+  access-key: aoc-2024
+  secret-key: aoc-2024
+  ssl-mode: false
+  region: me-south-1

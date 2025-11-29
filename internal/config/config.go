@@ -11,10 +11,12 @@ import (
 var FilePath = "../properties/go-away-2024.yml"
 var ServerCfg *ServerConfig
 var DatabaseCfg *DatabaseConfig
+var S3Cfg *S3Config
 
 type Config struct {
-	Server   ServerConfig
-	Database DatabaseConfig
+	Server   ServerConfig   `yaml:"server"`
+	Database DatabaseConfig `yaml:"database"`
+	S3       S3Config       `yaml:"s3"`
 }
 
 type ServerConfig struct {
@@ -32,6 +34,16 @@ type DatabaseConfig struct {
 	SslMode  string `yaml:"ssl-mode"`
 }
 
+type S3Config struct {
+	Host      string `yaml:"host"`
+	Port      string `yaml:"port"`
+	Bucket    string `yaml:"bucket"`
+	AccessKey string `yaml:"access-key"`
+	SecretKey string `yaml:"secret-key"`
+	SslMode   bool   `yaml:"ssl-mode"`
+	Region    string `yaml:"region"`
+}
+
 func Load() {
 	config, err := loadConfig(FilePath)
 	if err != nil {
@@ -40,6 +52,7 @@ func Load() {
 
 	ServerCfg = &config.Server
 	DatabaseCfg = &config.Database
+	S3Cfg = &config.S3
 	log.Infof("Loaded properties from %s", FilePath)
 }
 

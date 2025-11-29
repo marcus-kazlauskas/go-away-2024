@@ -44,8 +44,10 @@ paths:
           multipart/form-data:
             schema:
               type: object
+              required:
+                - file
               properties:
-                filename: 
+                file: 
                   type: string
                   format: binary
       responses:
@@ -54,13 +56,13 @@ paths:
           content:
             applicaton/json:
               schema:
-                $ref: "#/components/schemas/Task"
+                $ref: "#/components/schemas/TaskResponse"
         default:
           description: Unexpected error
           content:
             applicaton/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/ErrorResponse"
   /task/{id}:
     get:
       tags:
@@ -73,25 +75,25 @@ paths:
           description: Task ID
           required: true
           schema:
-            type: string
-            pattern: ^\d+$
-            example: 666
+            type: integer
+            format: int64
+            example: 1312
       responses:
         "200":
           description: Successful operation 
           content:
             applicaton/json:
               schema:
-                $ref: "#/components/schemas/Task"
+                $ref: "#/components/schemas/TaskResponse"
         default:
           description: Unexpected error
           content:
             applicaton/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
-    Task:
+    TaskResponse:
       required:
         - id 
         - status
@@ -101,9 +103,9 @@ components:
       properties:
         id:
           description: Task ID
-          type: string
-          pattern: ^\d+$
-          example: 666
+          type: integer
+          format: int64
+          example: 1312
         status:
           description: Task solution status
           type: string
@@ -136,7 +138,7 @@ components:
           type: string
           format: date-time 
           example: 2025-11-22T00:02:00.000+03:00
-    Error:
+    ErrorResponse:
       required:
         - code 
         - message 

@@ -3,6 +3,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -12,13 +13,13 @@ import (
 var _ ServerInterface = (*Server)(nil)
 
 type Server struct {
-	Task
+	TaskResponse
 }
 
 func NewAoCServer() *Server {
 	return &Server{
-		Task: Task{
-			Id:          "1",
+		TaskResponse: TaskResponse{
+			Id:          1312,
 			Status:      CREATED,
 			Result:      nil,
 			Message:     "Day 1 Part 1 from AoC 2024 accepted",
@@ -30,7 +31,7 @@ func NewAoCServer() *Server {
 }
 
 func SendServerError(c *fiber.Ctx, code int, message string) error {
-	serverErr := Error{
+	serverErr := ErrorResponse{
 		Code:    int32(code),
 		Message: message,
 	}
@@ -38,11 +39,14 @@ func SendServerError(c *fiber.Ctx, code int, message string) error {
 }
 
 func (s *Server) PostTask(c *fiber.Ctx, params PostTaskParams) error {
-	// logic is under construction)
-	return c.Status(http.StatusOK).JSON(s.Task)
+	response, err := SaveRequest(params)
+	if err != nil {
+		return SendServerError(c, http.StatusInternalServerError, fmt.Sprintf("%v", err))
+	}
+	return c.Status(http.StatusOK).JSON(response)
 }
 
-func (s *Server) GetTask(c *fiber.Ctx, id string) error {
+func (s *Server) GetTask(c *fiber.Ctx, id int64) error {
 	// logic is under construction)
-	return c.Status(http.StatusOK).JSON(s.Task)
+	return c.Status(http.StatusOK).JSON(s.TaskResponse)
 }

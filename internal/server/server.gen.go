@@ -13,16 +13,16 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
-// Defines values for TaskStatus.
+// Defines values for TaskResponseStatus.
 const (
-	COMPLITED TaskStatus = "COMPLITED"
-	CREATED   TaskStatus = "CREATED"
-	ERROR     TaskStatus = "ERROR"
-	STARTED   TaskStatus = "STARTED"
+	COMPLITED TaskResponseStatus = "COMPLITED"
+	CREATED   TaskResponseStatus = "CREATED"
+	ERROR     TaskResponseStatus = "ERROR"
+	STARTED   TaskResponseStatus = "STARTED"
 )
 
-// Error defines model for Error.
-type Error struct {
+// ErrorResponse defines model for ErrorResponse.
+type ErrorResponse struct {
 	// Code Error code
 	Code int32 `json:"code"`
 
@@ -30,8 +30,8 @@ type Error struct {
 	Message string `json:"message"`
 }
 
-// Task defines model for Task.
-type Task struct {
+// TaskResponse defines model for TaskResponse.
+type TaskResponse struct {
 	// CompletedAt Completion date of the task solving
 	CompletedAt *time.Time `json:"completedAt,omitempty"`
 
@@ -39,7 +39,7 @@ type Task struct {
 	CreatedAt time.Time `json:"createdAt"`
 
 	// Id Task ID
-	Id string `json:"id"`
+	Id int64 `json:"id"`
 
 	// Message Task solution message
 	Message string `json:"message"`
@@ -51,15 +51,15 @@ type Task struct {
 	StartedAt *time.Time `json:"startedAt,omitempty"`
 
 	// Status Task solution status
-	Status TaskStatus `json:"status"`
+	Status TaskResponseStatus `json:"status"`
 }
 
-// TaskStatus Task solution status
-type TaskStatus string
+// TaskResponseStatus Task solution status
+type TaskResponseStatus string
 
 // PostTaskMultipartBody defines parameters for PostTask.
 type PostTaskMultipartBody struct {
-	Filename *openapi_types.File `json:"filename,omitempty"`
+	File openapi_types.File `json:"file"`
 }
 
 // PostTaskParams defines parameters for PostTask.
@@ -84,7 +84,7 @@ type ServerInterface interface {
 	PostTask(c *fiber.Ctx, params PostTaskParams) error
 	// Get task status
 	// (GET /task/{id})
-	GetTask(c *fiber.Ctx, id string) error
+	GetTask(c *fiber.Ctx, id int64) error
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -162,7 +162,7 @@ func (siw *ServerInterfaceWrapper) GetTask(c *fiber.Ctx) error {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id string
+	var id int64
 
 	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Params("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
 	if err != nil {

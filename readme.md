@@ -1,19 +1,50 @@
-# REST-service for Advent of Code puzzles solving
+# Advent of Code
 
-## Supported puzzles
+## REST-service for puzzles solving
+
+Version 1.0.0
+
+### Supported puzzles
 
 | Year of the event | Days with part 1 | Days with part 2 |
 |:------------------|:-----------------|:-----------------|
 | 2024              | -                | -                |
 | 2025              | -                | -                |
 
-## Run the application
-
-Necessary local environment can be launched using Podman and [compose.yaml](local-env/compose.yaml).
-
-```console
-cd local-env
-podman compose up -d
-```
+### API description
 
 Openapi description of supported methods is located in [openapi-go-away-2024.yml](api/openapi-go-away-2024.yml).
+
+You can generate actual API interface:
+
+```shell
+go get -tool github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
+cd internal/server
+go tool oapi-codegen -config oapi-codegen.yml ../../api/openapi-go-away-2024.yml
+cd ../..
+```
+
+### Launch application
+
+Run local environment:
+
+```shell
+cd local-env
+podman compose up -d
+cd ..
+```
+
+Apply all available migrations:
+
+```shell
+cd db-migrations
+go get -tool github.com/pressly/goose/v3/cmd/goose@latest
+go tool goose up
+cd ..
+```
+
+Start application:
+```shell
+cd cmd
+go run main.go
+```

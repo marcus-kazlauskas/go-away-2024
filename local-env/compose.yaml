@@ -1,17 +1,19 @@
 services:
 
-  postgres:
+  aoc-postgres:
     build:
       context: ./postgres
       dockerfile: Containerfile
-    container_name: aoc-db
+    container_name: aoc-postgres
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     ports:
       - "5432:5432"
+    volumes:
+      - "aoc-postgres-data:/var/lib/postgresql/data"
   
-  kafka:
+  aoc-kafka:
     image: apache/kafka-native:3.9.1
     hostname: kafka
     container_name: aoc-kafka
@@ -33,21 +35,21 @@ services:
       KAFKA_LOG_RETENTION_HOURS: "168"
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
 
-  kafka-ui:
+  aoc-kafka-ui:
     image: provectuslabs/kafka-ui:v0.7.2
     container_name: aoc-kafka-ui
     ports:
       - "8080:8080"
     depends_on:
-      - kafka
+      - aoc-kafka
     environment:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
       DYNAMIC_CONFIG_ENABLED: "true"
     
-  minio:
+  aoc-minio:
     image: minio/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1
-    container_name: aoc-s3
+    container_name: aoc-minio
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -65,3 +67,4 @@ services:
 
 volumes:
   aoc-minio-data:
+  aoc-postgres-data:

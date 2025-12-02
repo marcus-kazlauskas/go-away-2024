@@ -4,9 +4,9 @@ info:
   version: 1.0.0
 tags:
   - name: AdventOfCode
-    description: Tasks management
+    description: Task management
 paths:
-  /tasks/create:
+  /task/create:
     post: 
       tags:
         - AdventOfCode
@@ -19,13 +19,15 @@ paths:
           required: true
           schema: 
             type: integer
+            format: int32
             example: 2024
-        - name: number
+        - name: day
           in: query
-          description: Puzzle number
+          description: Puzzle day
           required: true
           schema:
             type: integer
+            format: int32
             example: 1
         - name: part
           in: query
@@ -33,6 +35,7 @@ paths:
           required: true
           schema:
             type: integer
+            format: int32
             example: 1
       requestBody:
         description: Data for task solving
@@ -41,8 +44,10 @@ paths:
           multipart/form-data:
             schema:
               type: object
+              required:
+                - file
               properties:
-                filename: 
+                file: 
                   type: string
                   format: binary
       responses:
@@ -51,20 +56,14 @@ paths:
           content:
             applicaton/json:
               schema:
-                $ref: "#/components/schemas/Task"
-        "400":
-          description: Bad Request
+                $ref: "#/components/schemas/TaskResponse"
+        default:
+          description: Unexpected error
           content:
             applicaton/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "500":
-          description: Internal Server Error
-          content:
-            applicaton/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-  /tasks/{id}:
+  /task/{id}:
     get:
       tags:
         - AdventOfCode
@@ -76,31 +75,25 @@ paths:
           description: Task ID
           required: true
           schema:
-            format: uuid
-            type: string
-            example: 123e4567-e89b-12d3-a456-426655440000
+            type: integer
+            format: int64
+            example: 1312
       responses:
         "200":
           description: Successful operation 
           content:
             applicaton/json:
               schema:
-                $ref: "#/components/schemas/Task"
-        "400":
-          description: Bad Request
-          content:
-            applicaton/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
-          description: Internal Server Error
+                $ref: "#/components/schemas/TaskResponse"
+        default:
+          description: Unexpected error
           content:
             applicaton/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
-    Task:
+    TaskResponse:
       required:
         - id 
         - status
@@ -110,16 +103,16 @@ components:
       properties:
         id:
           description: Task ID
-          format: uuid
-          type: string
-          example: 123e4567-e89b-12d3-a456-426655440000
+          type: integer
+          format: int64
+          example: 1312
         status:
           description: Task solution status
           type: string
           enum:
             - CREATED 
-            - IN_PROGRESS
-            - SOLVED 
+            - STARTED
+            - COMPLITED
             - ERROR 
           example: SOLVED
         result:
@@ -146,9 +139,17 @@ components:
           format: date-time 
           example: 2025-11-22T00:02:00.000+03:00
     ErrorResponse:
+      required:
+        - code 
+        - message 
       type: object
       properties:
+        code: 
+          description: Error code 
+          type: integer
+          format: int32
+          example: 500
         message:
-          description: Service error response
+          description: Error message
           type: string
           example: Puzzle is not supported

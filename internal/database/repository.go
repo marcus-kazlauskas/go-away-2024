@@ -1,0 +1,37 @@
+package database
+
+func SaveRequest(request RequestEntity) (id int64, err error) {
+	err = DB.Get(
+		&id,
+		`insert into request (year, day, part, created_at)
+		values ($1, $2, $3, $4) returning id`,
+		request.Year,
+		request.Day,
+		request.Part,
+		request.CreatedAt,
+	)
+	return id, err
+}
+
+func GetRequestWithResult(id int64) (rqRes RequestWithResultEntity, err error) {
+	err = DB.Get(
+		&rqRes,
+		`select 
+			rq.id as request_id,
+			rq.year as year,
+			rq.day as day,
+			rq.part as part,
+			rq.created_at as created_at,
+			res.started_at as started_at,
+			res.completed_at as completed_at,
+			res.status as status,
+			res.result as result,
+			rq.s3_link as s3_link
+		from request rq
+		left join result res 
+			on rq.id = res.request_id
+		where rq.id = $1`,
+		id,
+	)
+	return rqRes, err
+}

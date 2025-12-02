@@ -4,78 +4,18 @@
 package server
 
 import (
+	"bytes"
+	"compress/gzip"
+	"encoding/base64"
 	"fmt"
 	"net/url"
-	"time"
+	"path"
+	"strings"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/gofiber/fiber/v2"
 	"github.com/oapi-codegen/runtime"
-	openapi_types "github.com/oapi-codegen/runtime/types"
 )
-
-// Defines values for TaskResponseStatus.
-const (
-	COMPLITED TaskResponseStatus = "COMPLITED"
-	CREATED   TaskResponseStatus = "CREATED"
-	ERROR     TaskResponseStatus = "ERROR"
-	STARTED   TaskResponseStatus = "STARTED"
-)
-
-// ErrorResponse defines model for ErrorResponse.
-type ErrorResponse struct {
-	// Code Error code
-	Code int32 `json:"code"`
-
-	// Message Error message
-	Message string `json:"message"`
-}
-
-// TaskResponse defines model for TaskResponse.
-type TaskResponse struct {
-	// CompletedAt Completion date of the task solving
-	CompletedAt *time.Time `json:"completedAt,omitempty"`
-
-	// CreatedAt Task creation date
-	CreatedAt time.Time `json:"createdAt"`
-
-	// Id Task ID
-	Id int64 `json:"id"`
-
-	// Message Task solution message
-	Message string `json:"message"`
-
-	// Result Task solution result
-	Result *string `json:"result,omitempty"`
-
-	// StartedAt Start date of the task solving
-	StartedAt *time.Time `json:"startedAt,omitempty"`
-
-	// Status Task solution status
-	Status TaskResponseStatus `json:"status"`
-}
-
-// TaskResponseStatus Task solution status
-type TaskResponseStatus string
-
-// PostTaskMultipartBody defines parameters for PostTask.
-type PostTaskMultipartBody struct {
-	File openapi_types.File `json:"file"`
-}
-
-// PostTaskParams defines parameters for PostTask.
-type PostTaskParams struct {
-	// Year Year of AoC challenge
-	Year int32 `form:"year" json:"year"`
-
-	// Day Puzzle day
-	Day int32 `form:"day" json:"day"`
-
-	// Part Puzzle part (1 or 2)
-	Part int32 `form:"part" json:"part"`
-}
-
-// PostTaskMultipartRequestBody defines body for PostTask for multipart/form-data ContentType.
-type PostTaskMultipartRequestBody PostTaskMultipartBody
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -197,4 +137,96 @@ func RegisterHandlersWithOptions(router fiber.Router, si ServerInterface, option
 
 	router.Get(options.BaseURL+"/task/:id", wrapper.GetTask)
 
+}
+
+// Base64 encoded, gzipped, json marshaled Swagger object
+var swaggerSpec = []string{
+
+	"H4sIAAAAAAAC/+xWUW/bNhD+K8RtDy0mx5TS5kFvnhMUATokcLwBQ5EHVjrZbCVSJU9J3cD/fThKke1E",
+	"dp0tj3uTfeTdd3fffccHyGxVW4OGPKQP4LMlVip8Xjhn3Qx9bY1H/qN2tkZHGoM5s3n4N0efOV2TtgbS",
+	"9pIItgjwu6rqEiF9L2UEhXWVIkhBGzpNIAJa1dj+xAU6WEdQofdqsdfto3nLM1w3P36UKLQXxpLwTV1b",
+	"R5hv3Hty2ixgvY7A4bdGO8wh/QQdxEeXt/15+/kLZsRo5sp/PZQ/IyDMJ/Qc77Q1amtErgiFLQQtUZDy",
+	"X4W35R0j2s4ikcn7URyPkmQuZSqTVMrf5GkqJWzVjT2NSFf4PLkIModqDxjOQwT7I55DseXLY+t8T9DL",
+	"8+1I8Wmc7NLg7N3LaDDv6teETIbocK5WIhbXypGIReFsJSZ2KhKZvBO+yTL0vmjKchWagLm417QMnSls",
+	"Wdp7bRbCoW9KGkqzs/wEVX+/B3V2djbgzZNyexp2w6Z/RZz45c3zpKjxP8uqOxUBmqbi+ZnOLibzC+7v",
+	"zXwya7+mV39cf7xsvy9ms6sZj9UG683Vx7+C7fBkah7ePt6myRuGPx9W9qFNYTkN0hTCTfI7NMQVnNoc",
+	"xZuFHal7tRoxGd5CBHfofJtqfCJPJNfC1mhUrSGF0xN5wuSsFS1DccbcgnGLIYiB9aFzLAlhsC5zViPr",
+	"iQsXbjpVIaHzkH56Wty/UTlGxuTMlqos0YQcNRu/NehWEIFRFeexQuVgu0TkGow6pWYIfYU5syN0dh09",
+	"hdOJaK5WezC0liMgxP8lfs20fxML60Tydg8SPvOKUG5bV+jpd5uvWl03hCb0tmpK0hxwzI5GuSK12ZHP",
+	"N0Khy0CNPupnbVTAfpjw4d4wp3fLdK5IicK6p3KwW4xWqcLWCrASKZ/kpeq61Jkia8ZfPHvezulXhwWk",
+	"8Mt48zAYd6+C8c5GHAB400us6OcCwqlCddL5GjB2XyYDOP40+L3GjDAXyGdDyX1TVdyOFKZhitsqkm13",
+	"AXdJLXhWO+G4Klg24JavtsP/oPM1Q1vgwOR/wKMGf7MWA7lZXjbcDsp3DLOPW6Qtuf9nwgEmfEDqhulx",
+	"3+wjwbo3Dba0UkYtsOJ8+nbuuFjfrv8JAAD//+VE3L1sCwAA",
+}
+
+// GetSwagger returns the content of the embedded swagger specification file
+// or error if failed to decode
+func decodeSpec() ([]byte, error) {
+	zipped, err := base64.StdEncoding.DecodeString(strings.Join(swaggerSpec, ""))
+	if err != nil {
+		return nil, fmt.Errorf("error base64 decoding spec: %w", err)
+	}
+	zr, err := gzip.NewReader(bytes.NewReader(zipped))
+	if err != nil {
+		return nil, fmt.Errorf("error decompressing spec: %w", err)
+	}
+	var buf bytes.Buffer
+	_, err = buf.ReadFrom(zr)
+	if err != nil {
+		return nil, fmt.Errorf("error decompressing spec: %w", err)
+	}
+
+	return buf.Bytes(), nil
+}
+
+var rawSpec = decodeSpecCached()
+
+// a naive cached of a decoded swagger spec
+func decodeSpecCached() func() ([]byte, error) {
+	data, err := decodeSpec()
+	return func() ([]byte, error) {
+		return data, err
+	}
+}
+
+// Constructs a synthetic filesystem for resolving external references when loading openapi specifications.
+func PathToRawSpec(pathToFile string) map[string]func() ([]byte, error) {
+	res := make(map[string]func() ([]byte, error))
+	if len(pathToFile) > 0 {
+		res[pathToFile] = rawSpec
+	}
+
+	return res
+}
+
+// GetSwagger returns the Swagger specification corresponding to the generated code
+// in this file. The external references of Swagger specification are resolved.
+// The logic of resolving external references is tightly connected to "import-mapping" feature.
+// Externally referenced files must be embedded in the corresponding golang packages.
+// Urls can be supported but this task was out of the scope.
+func GetSwagger() (swagger *openapi3.T, err error) {
+	resolvePath := PathToRawSpec("")
+
+	loader := openapi3.NewLoader()
+	loader.IsExternalRefsAllowed = true
+	loader.ReadFromURIFunc = func(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
+		pathToFile := url.String()
+		pathToFile = path.Clean(pathToFile)
+		getSpec, ok := resolvePath[pathToFile]
+		if !ok {
+			err1 := fmt.Errorf("path not found: %s", pathToFile)
+			return nil, err1
+		}
+		return getSpec()
+	}
+	var specData []byte
+	specData, err = rawSpec()
+	if err != nil {
+		return
+	}
+	swagger, err = loader.LoadFromData(specData)
+	if err != nil {
+		return
+	}
+	return
 }

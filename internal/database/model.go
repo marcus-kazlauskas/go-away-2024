@@ -18,7 +18,7 @@ type ResultEntity struct {
 	Status      string     `db:"status"`
 	Result      *string    `db:"result"`
 	StartedAt   *time.Time `db:"started_at"`
-	CompletedAt *time.Time `db:"complited_at"`
+	CompletedAt *time.Time `db:"completed_at"`
 	RequestId   int64      `db:"request_id"`
 }
 
@@ -29,8 +29,8 @@ type RequestWithResultEntity struct {
 	Part        int32      `db:"part"`
 	CreatedAt   time.Time  `db:"created_at"`
 	StartedAt   *time.Time `db:"started_at"`
-	CompletedAt *time.Time `db:"complited_at"`
-	Status      string     `db:"status"`
+	CompletedAt *time.Time `db:"completed_at"`
+	Status      *string    `db:"status"`
 	Result      *string    `db:"result"`
 	S3Link      *string    `db:"s3_link"`
 }

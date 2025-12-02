@@ -8,9 +8,6 @@ import (
 	"net"
 
 	"github.com/gofiber/fiber/v2/log"
-
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
 func main() {
@@ -18,10 +15,8 @@ func main() {
 	database.Connect()
 	minio.CreateClient()
 
-	aoc := server.NewAoCServer()
-	app := fiber.New()
-	app.Use(logger.New())
-	server.RegisterHandlers(app, aoc)
+	adventOfCodeServer := server.NewServer()
+	app := server.NewServerApp(adventOfCodeServer)
 	addr := net.JoinHostPort(config.ServerCfg.Host, config.ServerCfg.Port)
 	log.Fatal(app.Listen(addr))
 }

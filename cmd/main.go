@@ -1,22 +1,22 @@
 package main
 
 import (
+	"go-away-2024/internal/aoc_server"
 	"go-away-2024/internal/config"
 	"go-away-2024/internal/database"
 	"go-away-2024/internal/minio"
-	"go-away-2024/internal/server"
 	"net"
 
 	"github.com/gofiber/fiber/v2/log"
 )
 
 func main() {
-	config.Load()
-	database.Connect()
-	minio.CreateClient()
+	config := config.GetConfig()
+	repository := database.NewRepository(database.Connect(config))
+	minio := minio.NewClient(config)
 
-	adventOfCodeServer := server.NewServer()
-	app := server.NewServerApp(adventOfCodeServer)
-	addr := net.JoinHostPort(config.ServerCfg.Host, config.ServerCfg.Port)
+	adventOfCodeServer := aoc_server.NewServer(config, repository, minio)
+	app := aoc_server.NewServerApp(adventOfCodeServer)
+	addr := net.JoinHostPort(config.Server.Host, config.Server.Port)
 	log.Fatal(app.Listen(addr))
 }

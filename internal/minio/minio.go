@@ -9,18 +9,16 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
-var Client *minio.Client
+func NewClient(cfg *config.Config) *minio.Client {
+	endpoint := net.JoinHostPort(cfg.S3.Host, cfg.S3.Port)
 
-func CreateClient() {
-	var err error
-	endpoint := net.JoinHostPort(config.S3Cfg.Host, config.S3Cfg.Port)
-
-	Client, err = minio.New(endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(config.S3Cfg.AccessKey, config.S3Cfg.SecretKey, ""),
-		Secure: config.S3Cfg.SslMode,
+	client, err := minio.New(endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(cfg.S3.AccessKey, cfg.S3.SecretKey, ""),
+		Secure: cfg.S3.SslMode,
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Infof("S3 client created: endpoint=%s", endpoint)
+	return client
 }

@@ -9,19 +9,18 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var DB *sqlx.DB
-
-func Connect() {
+func Connect(cfg *config.Config) *sqlx.DB {
 	dsn := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		config.DatabaseCfg.Host,
-		config.DatabaseCfg.Port,
-		config.DatabaseCfg.User,
-		config.DatabaseCfg.Password,
-		config.DatabaseCfg.Name,
-		config.DatabaseCfg.SslMode,
+		cfg.Database.Host,
+		cfg.Database.Port,
+		cfg.Database.User,
+		cfg.Database.Password,
+		cfg.Database.Name,
+		cfg.Database.SslMode,
 	)
 
-	DB = sqlx.MustConnect(config.DatabaseCfg.Driver, dsn)
+	db := sqlx.MustConnect(cfg.Database.Driver, dsn)
 	log.Infof("Connected to database: %s", dsn)
+	return db
 }

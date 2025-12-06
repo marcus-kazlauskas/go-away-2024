@@ -8,10 +8,7 @@ import (
 	yaml "gopkg.in/yaml.v3"
 )
 
-var FilePath = "../properties/go-away-2024.yml"
-var ServerCfg *ServerConfig
-var DatabaseCfg *DatabaseConfig
-var S3Cfg *S3Config
+const FilePath string = "../properties/go-away-2024.yml"
 
 type Config struct {
 	Server   ServerConfig   `yaml:"server"`
@@ -44,28 +41,24 @@ type S3Config struct {
 	Region    string `yaml:"region"`
 }
 
-func Load() {
+func GetConfig() *Config {
 	config, err := loadConfig(FilePath)
 	if err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
-
-	ServerCfg = &config.Server
-	DatabaseCfg = &config.Database
-	S3Cfg = &config.S3
-	log.Infof("Loaded properties from %s", FilePath)
+	return config
 }
 
 func loadConfig(filePath string) (*Config, error) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("Error reading config file: %v", err)
+		return nil, fmt.Errorf("error reading config file: %v", err)
 	}
 
 	var config Config
 	err = yaml.Unmarshal(data, &config)
 	if err != nil {
-		return nil, fmt.Errorf("Error unmarshaling YAML: %v", err)
+		return nil, fmt.Errorf("error unmarshaling YAML: %v", err)
 	}
 
 	return &config, nil

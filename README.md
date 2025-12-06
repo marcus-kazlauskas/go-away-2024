@@ -19,8 +19,9 @@ You can generate actual API interface:
 
 ```shell
 go get -tool github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
-cd internal/server
-go tool oapi-codegen -config oapi-codegen.yml ../../api/openapi-go-away-2024.yml
+cd internal/api
+go tool oapi-codegen -config api-codegen.yml ../../api/openapi-go-away-2024.yml
+go tool oapi-codegen -config types-codegen.yml ../../api/openapi-go-away-2024.yml
 cd ../..
 ```
 

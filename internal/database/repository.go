@@ -1,7 +1,19 @@
 package database
 
-func SaveRequest(request RequestEntity) (id int64, err error) {
-	err = DB.Get(
+import "github.com/jmoiron/sqlx"
+
+type Repository struct {
+	db *sqlx.DB
+}
+
+func NewRepository(db *sqlx.DB) *Repository {
+	return &Repository{
+		db: db,
+	}
+}
+
+func (r *Repository) SaveRequest(request RequestEntity) (id int64, err error) {
+	err = r.db.Get(
 		&id,
 		`insert into request (year, day, part, created_at)
 		values ($1, $2, $3, $4) returning id`,
@@ -13,8 +25,8 @@ func SaveRequest(request RequestEntity) (id int64, err error) {
 	return id, err
 }
 
-func GetRequestWithResult(id int64) (rqRes RequestWithResultEntity, err error) {
-	err = DB.Get(
+func (r *Repository) GetRequestWithResult(id int64) (rqRes RequestWithResultEntity, err error) {
+	err = r.db.Get(
 		&rqRes,
 		`select 
 			rq.id as request_id,

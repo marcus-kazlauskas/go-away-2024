@@ -11,11 +11,11 @@ import (
 )
 
 func main() {
-	config := config.GetConfig()
+	config := config.GetConfig(config.MainPath)
 	repository := database.NewRepository(database.Connect(config))
 	minio := minio.NewClient(config)
 
-	adventOfCodeServer := aoc_server.NewServer(config, repository, minio)
+	adventOfCodeServer := aoc_server.NewServer(repository, minio)
 	app := aoc_server.NewServerApp(adventOfCodeServer)
 	addr := net.JoinHostPort(config.Server.Host, config.Server.Port)
 	log.Fatal(app.Listen(addr))

@@ -1,13 +1,14 @@
 package aoc_server
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"go-away-2024/internal/api"
-	"go-away-2024/internal/config"
 	"go-away-2024/internal/database"
-	"go-away-2024/internal/mapper"
+	"go-away-2024/internal/mappers"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
@@ -19,14 +20,12 @@ import (
 var _ api.ServerInterface = (*Server)(nil)
 
 type Server struct {
-	Config      *config.Config
 	Repository  *database.Repository
 	MinioClient *minio.Client
 }
 
-func NewServer(cfg *config.Config, repo *database.Repository, minio *minio.Client) *Server {
+func NewServer(repo *database.Repository, minio *minio.Client) *Server {
 	return &Server{
-		Config:      cfg,
 		Repository:  repo,
 		MinioClient: minio,
 	}
@@ -46,7 +45,17 @@ func NewServerApp(s *Server) *fiber.App {
 	return app
 }
 
-func SendServerError(c *fiber.Ctx, code int, message string) error {
+func SendServerError(c *fiber.Ctx, err error) error {
+	var code int
+	var message string
+	switch {
+	case errors.Is(err, sql.ErrNoRows):
+		code = http.StatusNotFound
+	default:
+		code = http.StatusInternalServerError
+	}
+	message = fmt.Sprintf("%v", err)
+
 	serverErr := api.ErrorResponse{
 		Code:    int32(code),
 		Message: message,
@@ -59,19 +68,19 @@ func SendServerError(c *fiber.Ctx, code int, message string) error {
 func (s *Server) PostTask(c *fiber.Ctx, params api.PostTaskParams) error {
 	response, err := s.saveRequest(c, params)
 	if err != nil {
-		return SendServerError(c, http.StatusInternalServerError, fmt.Sprintf("%v", err))
+		return SendServerError(c, err)
 	}
 	return c.Status(http.StatusOK).JSON(response)
 }
 
 func (s *Server) saveRequest(c *fiber.Ctx, p api.PostTaskParams) (*api.TaskResponse, error) {
-	request := mapper.PostTaskParamsToRequestEntity(p)
+	request := mappers.PostTaskParamsToRequestEntity(p)
 	id, err := s.Repository.SaveRequest(request)
 	if err != nil {
 		return nil, err
 	}
 	request.Id = id
-	return mapper.RequestEntityToTaskCreatedResponse(request), err
+	return mappers.RequestEntityToTaskCreatedResponse(request), err
 }
 
 // Get task status
@@ -79,7 +88,7 @@ func (s *Server) saveRequest(c *fiber.Ctx, p api.PostTaskParams) (*api.TaskRespo
 func (s *Server) GetTask(c *fiber.Ctx, id int64) error {
 	response, err := s.getRequestWithResult(id)
 	if err != nil {
-		return SendServerError(c, http.StatusInternalServerError, fmt.Sprintf("%v", err))
+		return SendServerError(c, err)
 	}
 	return c.Status(http.StatusOK).JSON(response)
 }
@@ -89,5 +98,5 @@ func (s *Server) getRequestWithResult(id int64) (*api.TaskResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	return mapper.RequestWithResultEntityToTaskCreatedResponse(rqRes), err
+	return mappers.RequestWithResultEntityToTaskCreatedResponse(rqRes), err
 }

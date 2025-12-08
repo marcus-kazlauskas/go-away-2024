@@ -25,6 +25,14 @@ func (r *Repository) SaveRequest(request RequestEntity) (id int64, err error) {
 	return id, err
 }
 
+func (r *Repository) DeleteRequest(id int64) error {
+	_, err := r.db.Exec(
+		`delete from request where id = $1`,
+		id,
+	)
+	return err
+}
+
 func (r *Repository) GetRequestWithResult(id int64) (rqRes RequestWithResultEntity, err error) {
 	err = r.db.Get(
 		&rqRes,

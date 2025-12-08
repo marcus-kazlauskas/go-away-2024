@@ -8,7 +8,8 @@ import (
 	yaml "gopkg.in/yaml.v3"
 )
 
-const FilePath string = "../properties/go-away-2024.yml"
+const MainPath string = "../properties/go-away-2024.yml"
+const TestPath string = "../../properties/go-away-2024.yml"
 
 type Config struct {
 	Server   ServerConfig   `yaml:"server"`
@@ -41,8 +42,8 @@ type S3Config struct {
 	Region    string `yaml:"region"`
 }
 
-func GetConfig() *Config {
-	config, err := loadConfig(FilePath)
+func GetConfig(filePath string) *Config {
+	config, err := loadConfig(filePath)
 	if err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}

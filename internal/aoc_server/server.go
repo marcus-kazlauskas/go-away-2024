@@ -5,15 +5,16 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 
 	"go-away-2024/internal/api"
 	"go-away-2024/internal/database"
 	"go-away-2024/internal/mappers"
+	"go-away-2024/internal/minio"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/minio/minio-go/v7"
 	middleware "github.com/oapi-codegen/fiber-middleware"
 )
 
@@ -21,10 +22,10 @@ var _ api.ServerInterface = (*Server)(nil)
 
 type Server struct {
 	Repository  *database.Repository
-	MinioClient *minio.Client
+	MinioClient *minio.MinioClient
 }
 
-func NewServer(repo *database.Repository, minio *minio.Client) *Server {
+func NewServer(repo *database.Repository, minio *minio.MinioClient) *Server {
 	return &Server{
 		Repository:  repo,
 		MinioClient: minio,
@@ -66,14 +67,20 @@ func SendServerError(c *fiber.Ctx, err error) error {
 // Create task to solve
 // (POST /task/create)
 func (s *Server) PostTask(c *fiber.Ctx, params api.PostTaskParams) error {
-	response, err := s.saveRequest(c, params)
+	response, err := s.saveRequest(params)
 	if err != nil {
 		return SendServerError(c, err)
 	}
+
+	_, err = s.uploadPuzzleInput(c, params)
+	if err != nil {
+		return SendServerError(c, err)
+	}
+
 	return c.Status(http.StatusOK).JSON(response)
 }
 
-func (s *Server) saveRequest(c *fiber.Ctx, p api.PostTaskParams) (*api.TaskResponse, error) {
+func (s *Server) saveRequest(p api.PostTaskParams) (*api.TaskResponse, error) {
 	request := mappers.PostTaskParamsToRequestEntity(p)
 	id, err := s.Repository.SaveRequest(request)
 	if err != nil {
@@ -81,6 +88,22 @@ func (s *Server) saveRequest(c *fiber.Ctx, p api.PostTaskParams) (*api.TaskRespo
 	}
 	request.Id = id
 	return mappers.RequestEntityToTaskCreatedResponse(request), err
+}
+
+func (s *Server) uploadPuzzleInput(c *fiber.Ctx, p api.PostTaskParams) (string, error) {
+	pattern := fmt.Sprintf("Year%dDay%dPart%d-*.txt", p.Year, p.Day, p.Part)
+	tmpFile, err := os.CreateTemp("", pattern)
+	if err != nil {
+		return "", err
+	}
+	defer os.Remove(tmpFile.Name())
+
+	_, err = tmpFile.Write(c.Body())
+	if err != nil {
+		return "", err
+	}
+
+	return tmpFile.Name(), s.MinioClient.UploadPuzzleInput(tmpFile)
 }
 
 // Get task status

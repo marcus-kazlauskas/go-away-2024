@@ -23,10 +23,11 @@ func TestRepository(t *testing.T) {
 	}
 
 	config := config.GetConfig(config.TestPath)
-	repository := database.NewRepository(database.Connect(config))
+	db := database.Connect(config)
+	repository := database.NewRepository(db)
 	deleteRequest := func() {
 		for i := range count {
-			repository.DeleteRequest(requestIds[i])
+			DeleteRequest(db, requestIds[i])
 		}
 	}
 
@@ -34,7 +35,7 @@ func TestRepository(t *testing.T) {
 
 	t.Run("Should find saved task", func(t *testing.T) {
 		now := time.Now().UTC()
-		request := Request(repository, 2024, 1, 1, now)
+		request := SaveRequest(repository, 2024, 1, 1, now)
 		addRequestId(request.Id)
 
 		result, err := repository.GetRequestWithResult(lastRequestId())

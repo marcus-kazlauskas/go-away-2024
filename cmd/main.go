@@ -4,6 +4,7 @@ import (
 	"go-away-2024/internal/aoc_server"
 	"go-away-2024/internal/config"
 	"go-away-2024/internal/database"
+	"go-away-2024/internal/kafka"
 	"go-away-2024/internal/minio"
 	"net"
 
@@ -14,8 +15,9 @@ func main() {
 	config := config.GetConfig(config.MainPath)
 	repository := database.NewRepository(database.Connect(config))
 	minio := minio.NewClient(config)
+	producer := kafka.NewProducer(config)
 
-	adventOfCodeServer := aoc_server.NewServer(repository, minio)
+	adventOfCodeServer := aoc_server.NewServer(repository, minio, producer)
 	app := aoc_server.NewServerApp(adventOfCodeServer)
 	addr := net.JoinHostPort(config.Server.Host, config.Server.Port)
 	log.Fatal(app.Listen(addr))

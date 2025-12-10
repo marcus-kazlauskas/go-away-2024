@@ -9,6 +9,7 @@ import (
 
 	"go-away-2024/internal/api"
 	"go-away-2024/internal/database"
+	"go-away-2024/internal/kafka"
 	"go-away-2024/internal/mappers"
 	"go-away-2024/internal/minio"
 
@@ -21,14 +22,20 @@ import (
 var _ api.ServerInterface = (*Server)(nil)
 
 type Server struct {
-	Repository  *database.Repository
-	MinioClient *minio.MinioClient
+	Repository    *database.Repository
+	MinioClient   *minio.MinioClient
+	KafkaProducer *kafka.KafkaProducer
 }
 
-func NewServer(repo *database.Repository, minio *minio.MinioClient) *Server {
+func NewServer(
+	repo *database.Repository,
+	minio *minio.MinioClient,
+	producer *kafka.KafkaProducer,
+) *Server {
 	return &Server{
-		Repository:  repo,
-		MinioClient: minio,
+		Repository:    repo,
+		MinioClient:   minio,
+		KafkaProducer: producer,
 	}
 }
 
@@ -72,11 +79,12 @@ func (s *Server) PostTask(c *fiber.Ctx, params api.PostTaskParams) error {
 		return SendServerError(c, err)
 	}
 
-	err = s.uploadPuzzleInput(c, params, request.Id)
+	s3Link, err := s.uploadPuzzleInput(c, params, request.Id)
 	if err != nil {
 		return SendServerError(c, err)
 	}
 
+	request.S3Link = &s3Link
 	err = s.sendTask(request)
 	if err != nil {
 		return SendServerError(c, err)
@@ -96,25 +104,30 @@ func (s *Server) saveRequest(p api.PostTaskParams) (database.RequestEntity, erro
 	return request, err
 }
 
-func (s *Server) uploadPuzzleInput(c *fiber.Ctx, p api.PostTaskParams, id int64) error {
+func (s *Server) uploadPuzzleInput(c *fiber.Ctx, p api.PostTaskParams, id int64) (string, error) {
 	pattern := fmt.Sprintf("Id%dYear%dDay%dPart%d-*.txt", id, p.Year, p.Day, p.Part)
 	tmpFile, err := os.CreateTemp("", pattern)
 	if err != nil {
-		return err
+		return pattern, err
 	}
 	defer os.Remove(tmpFile.Name())
 	tmpFile.Write(c.Body())
 
 	err = s.MinioClient.UploadPuzzleInput(pattern, tmpFile)
 	if err != nil {
-		return err
+		return pattern, err
 	}
 
-	return s.Repository.UpdateRequestS3Link(id, pattern)
+	return pattern, s.Repository.UpdateRequestS3Link(id, pattern)
 }
 
 func (s *Server) sendTask(rq database.RequestEntity) error {
-	// TODO: Sending message to kafka will be implemented in kafka package
+	msg := mappers.RequestEntityToTaskMessage(rq)
+	err := s.KafkaProducer.SendTask(msg)
+	if err != nil {
+		return err
+	}
+
 	return s.Repository.SaveResult(rq.Id)
 }
 

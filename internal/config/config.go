@@ -15,6 +15,7 @@ type Config struct {
 	Server   ServerConfig   `yaml:"server"`
 	Database DatabaseConfig `yaml:"database"`
 	S3       S3Config       `yaml:"s3"`
+	Kafka    KafkaConfig    `yaml:"kafka"`
 }
 
 type ServerConfig struct {
@@ -40,6 +41,18 @@ type S3Config struct {
 	SecretKey string `yaml:"secret-key"`
 	SslMode   bool   `yaml:"ssl-mode"`
 	Region    string `yaml:"region"`
+}
+
+type KafkaConfig struct {
+	Host             string `yaml:"host"`
+	Port             string `yaml:"port"`
+	Network          string `yaml:"network"`
+	Topic            string `yaml:"topic"`
+	Partition        int    `yaml:"partition"`
+	WriteDeadline    string `yaml:"writeDeadline"`
+	ReadDeadLine     string `yaml:"readDeadLine"`
+	ReadBatchMinSize string `yaml:"readBatchMinSize"`
+	ReadbatchMaxSize string `yaml:"readbatchMaxSize"`
 }
 
 func GetConfig(filePath string) *Config {

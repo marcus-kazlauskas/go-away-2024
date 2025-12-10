@@ -35,20 +35,19 @@ func NewClient(cfg *config.Config) *MinioClient {
 	}
 }
 
-func (m *MinioClient) UploadPuzzleInput(object *os.File) error {
-	objectName := object.Name()
+func (m *MinioClient) UploadPuzzleInput(name string, object *os.File) error {
 	objectStat, _ := object.Stat()
 	object.Seek(0, 0)
 
 	info, err := m.c.PutObject(
 		context.Background(),
-		PuzzleBucketName, objectName, object, objectStat.Size(),
+		PuzzleBucketName, name, object, objectStat.Size(),
 		minio.PutObjectOptions{ContentType: PuzzleContentType},
 	)
 	if err != nil {
 		return err
 	}
-	log.Infof("Successfully uploaded %s of size %d", objectName, info.Size)
+	log.Infof("Successfully uploaded %s of size %d", name, info.Size)
 	return nil
 }
 

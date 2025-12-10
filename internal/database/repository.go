@@ -25,6 +25,25 @@ func (r *Repository) SaveRequest(request RequestEntity) (id int64, err error) {
 	return id, err
 }
 
+func (r *Repository) UpdateRequestS3Link(id int64, s3Link string) error {
+	_, err := r.db.Exec(
+		`update request set s3_link = $2
+		where id = $1`,
+		id,
+		s3Link,
+	)
+	return err
+}
+
+func (r *Repository) SaveResult(rqId int64) error {
+	_, err := r.db.Exec(
+		`insert into result (request_id)
+		values ($1)`,
+		rqId,
+	)
+	return err
+}
+
 func (r *Repository) GetRequestWithResult(id int64) (rqRes RequestWithResultEntity, err error) {
 	err = r.db.Get(
 		&rqRes,

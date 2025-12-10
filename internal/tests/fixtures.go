@@ -3,12 +3,14 @@ package tests
 import (
 	"go-away-2024/internal/database"
 	"time"
+
+	"github.com/jmoiron/sqlx"
 )
 
 const MaxInsertedRows int32 = 10
 
-// Save new Request into database
-func Request(
+// Save new SaveRequest into database
+func SaveRequest(
 	r *database.Repository,
 	year int32, day int32, part int32, createdAt time.Time,
 ) database.RequestEntity {
@@ -24,4 +26,8 @@ func Request(
 	}
 	request.Id = id
 	return request
+}
+
+func DeleteRequest(db *sqlx.DB, id int64) {
+	db.MustExec(`delete from request where id = $1`, id)
 }

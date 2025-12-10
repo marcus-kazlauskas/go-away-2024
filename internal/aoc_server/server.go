@@ -5,15 +5,16 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 
 	"go-away-2024/internal/api"
 	"go-away-2024/internal/database"
 	"go-away-2024/internal/mappers"
+	"go-away-2024/internal/minio"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/minio/minio-go/v7"
 	middleware "github.com/oapi-codegen/fiber-middleware"
 )
 
@@ -21,10 +22,10 @@ var _ api.ServerInterface = (*Server)(nil)
 
 type Server struct {
 	Repository  *database.Repository
-	MinioClient *minio.Client
+	MinioClient *minio.MinioClient
 }
 
-func NewServer(repo *database.Repository, minio *minio.Client) *Server {
+func NewServer(repo *database.Repository, minio *minio.MinioClient) *Server {
 	return &Server{
 		Repository:  repo,
 		MinioClient: minio,
@@ -66,37 +67,72 @@ func SendServerError(c *fiber.Ctx, err error) error {
 // Create task to solve
 // (POST /task/create)
 func (s *Server) PostTask(c *fiber.Ctx, params api.PostTaskParams) error {
-	response, err := s.saveRequest(c, params)
+	request, err := s.saveRequest(params)
 	if err != nil {
 		return SendServerError(c, err)
 	}
+
+	err = s.uploadPuzzleInput(c, params, request.Id)
+	if err != nil {
+		return SendServerError(c, err)
+	}
+
+	err = s.sendTask(request)
+	if err != nil {
+		return SendServerError(c, err)
+	}
+
+	response := mappers.RequestEntityToTaskCreatedResponse(request)
 	return c.Status(http.StatusOK).JSON(response)
 }
 
-func (s *Server) saveRequest(c *fiber.Ctx, p api.PostTaskParams) (*api.TaskResponse, error) {
+func (s *Server) saveRequest(p api.PostTaskParams) (database.RequestEntity, error) {
 	request := mappers.PostTaskParamsToRequestEntity(p)
 	id, err := s.Repository.SaveRequest(request)
 	if err != nil {
-		return nil, err
+		return request, err
 	}
 	request.Id = id
-	return mappers.RequestEntityToTaskCreatedResponse(request), err
+	return request, err
+}
+
+func (s *Server) uploadPuzzleInput(c *fiber.Ctx, p api.PostTaskParams, id int64) error {
+	pattern := fmt.Sprintf("Id%dYear%dDay%dPart%d-*.txt", id, p.Year, p.Day, p.Part)
+	tmpFile, err := os.CreateTemp("", pattern)
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tmpFile.Name())
+	tmpFile.Write(c.Body())
+
+	err = s.MinioClient.UploadPuzzleInput(pattern, tmpFile)
+	if err != nil {
+		return err
+	}
+
+	return s.Repository.UpdateRequestS3Link(id, pattern)
+}
+
+func (s *Server) sendTask(rq database.RequestEntity) error {
+	// TODO: Sending message to kafka will be implemented in kafka package
+	return s.Repository.SaveResult(rq.Id)
 }
 
 // Get task status
 // (GET /task/{id})
 func (s *Server) GetTask(c *fiber.Ctx, id int64) error {
-	response, err := s.getRequestWithResult(id)
+	rqRes, err := s.getRequestWithResult(id)
 	if err != nil {
 		return SendServerError(c, err)
 	}
+	response := mappers.RequestWithResultEntityToTaskCreatedResponse(rqRes)
 	return c.Status(http.StatusOK).JSON(response)
 }
 
-func (s *Server) getRequestWithResult(id int64) (*api.TaskResponse, error) {
+func (s *Server) getRequestWithResult(id int64) (database.RequestWithResultEntity, error) {
 	rqRes, err := s.Repository.GetRequestWithResult(id)
 	if err != nil {
-		return nil, err
+		return rqRes, err
 	}
-	return mappers.RequestWithResultEntityToTaskCreatedResponse(rqRes), err
+	return rqRes, err
 }

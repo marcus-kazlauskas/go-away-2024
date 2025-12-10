@@ -16,8 +16,8 @@ func PostTaskParamsToRequestEntity(p api.PostTaskParams) database.RequestEntity 
 	}
 }
 
-func RequestEntityToTaskCreatedResponse(e database.RequestEntity) *api.TaskResponse {
-	return &api.TaskResponse{
+func RequestEntityToTaskCreatedResponse(e database.RequestEntity) api.TaskResponse {
+	return api.TaskResponse{
 		Id:        e.Id,
 		Status:    api.CREATED,
 		CreatedAt: e.CreatedAt,
@@ -29,14 +29,14 @@ func yearDayPartToMessage(year int32, day int32, part int32) string {
 	return fmt.Sprintf("Day %d Part %d from AoC %d accepted", day, part, year)
 }
 
-func RequestWithResultEntityToTaskCreatedResponse(e database.RequestWithResultEntity) *api.TaskResponse {
+func RequestWithResultEntityToTaskCreatedResponse(e database.RequestWithResultEntity) api.TaskResponse {
 	var status api.TaskResponseStatus
 	if e.Status == nil {
 		status = api.CREATED
 	} else {
 		status = api.TaskResponseStatus(*e.Status)
 	}
-	return &api.TaskResponse{
+	return api.TaskResponse{
 		Id:          e.RequestId,
 		Status:      status,
 		CreatedAt:   e.CreatedAt,

@@ -22,20 +22,21 @@ import (
 var _ api.ServerInterface = (*Server)(nil)
 
 type Server struct {
-	Repository    *database.Repository
-	MinioClient   *minio.MinioClient
-	KafkaProducer *kafka.KafkaProducer
+	repository      *database.Repository
+	minioClient     *minio.MinioClient
+	kafkaConnection *kafka.KafkaConnection
 }
 
 func NewServer(
 	repo *database.Repository,
 	minio *minio.MinioClient,
-	producer *kafka.KafkaProducer,
+	kafka *kafka.KafkaConnection,
 ) *Server {
+	log.Info("Server created")
 	return &Server{
-		Repository:    repo,
-		MinioClient:   minio,
-		KafkaProducer: producer,
+		repository:      repo,
+		minioClient:     minio,
+		kafkaConnection: kafka,
 	}
 }
 
@@ -85,7 +86,7 @@ func (s *Server) PostTask(c *fiber.Ctx, params api.PostTaskParams) error {
 	}
 
 	request.S3Link = &s3Link
-	err = s.sendTask(request)
+	err = s.writeTask(request)
 	if err != nil {
 		return SendServerError(c, err)
 	}
@@ -96,7 +97,7 @@ func (s *Server) PostTask(c *fiber.Ctx, params api.PostTaskParams) error {
 
 func (s *Server) saveRequest(p api.PostTaskParams) (database.RequestEntity, error) {
 	request := mappers.PostTaskParamsToRequestEntity(p)
-	id, err := s.Repository.SaveRequest(request)
+	id, err := s.repository.SaveRequest(request)
 	if err != nil {
 		return request, err
 	}
@@ -113,22 +114,22 @@ func (s *Server) uploadPuzzleInput(c *fiber.Ctx, p api.PostTaskParams, id int64)
 	defer os.Remove(tmpFile.Name())
 	tmpFile.Write(c.Body())
 
-	err = s.MinioClient.UploadPuzzleInput(pattern, tmpFile)
+	err = s.minioClient.UploadPuzzleInput(pattern, tmpFile)
 	if err != nil {
 		return pattern, err
 	}
 
-	return pattern, s.Repository.UpdateRequestS3Link(id, pattern)
+	return pattern, s.repository.UpdateRequestS3Link(id, pattern)
 }
 
-func (s *Server) sendTask(rq database.RequestEntity) error {
+func (s *Server) writeTask(rq database.RequestEntity) error {
 	msg := mappers.RequestEntityToTaskMessage(rq)
-	err := s.KafkaProducer.SendTask(msg)
+	err := s.kafkaConnection.WriteTask(&msg)
 	if err != nil {
 		return err
 	}
 
-	return s.Repository.SaveResult(rq.Id)
+	return s.repository.SaveResult(rq.Id)
 }
 
 // Get task status
@@ -143,7 +144,7 @@ func (s *Server) GetTask(c *fiber.Ctx, id int64) error {
 }
 
 func (s *Server) getRequestWithResult(id int64) (database.RequestWithResultEntity, error) {
-	rqRes, err := s.Repository.GetRequestWithResult(id)
+	rqRes, err := s.repository.GetRequestWithResult(id)
 	if err != nil {
 		return rqRes, err
 	}

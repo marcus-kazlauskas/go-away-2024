@@ -12,10 +12,11 @@ const MainPath string = "../properties/go-away-2024.yml"
 const TestPath string = "../../properties/go-away-2024.yml"
 
 type Config struct {
-	Server   ServerConfig   `yaml:"server"`
-	Database DatabaseConfig `yaml:"database"`
-	S3       S3Config       `yaml:"s3"`
-	Kafka    KafkaConfig    `yaml:"kafka"`
+	Server     ServerConfig     `yaml:"server"`
+	Database   DatabaseConfig   `yaml:"database"`
+	S3         S3Config         `yaml:"s3"`
+	Kafka      KafkaConfig      `yaml:"kafka"`
+	Calculator CalculatorConfig `yaml:"calculator"`
 }
 
 type ServerConfig struct {
@@ -51,8 +52,12 @@ type KafkaConfig struct {
 	Partition        int    `yaml:"partition"`
 	WriteDeadline    string `yaml:"writeDeadline"`
 	ReadDeadLine     string `yaml:"readDeadLine"`
-	ReadBatchMinSize string `yaml:"readBatchMinSize"`
-	ReadbatchMaxSize string `yaml:"readbatchMaxSize"`
+	ReadBatchMinSize int    `yaml:"readBatchMinSize"`
+	ReadbatchMaxSize int    `yaml:"readbatchMaxSize"`
+}
+
+type CalculatorConfig struct {
+	Sleep string `yaml:"sleep"`
 }
 
 func GetConfig(filePath string) *Config {

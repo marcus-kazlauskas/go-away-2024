@@ -23,7 +23,9 @@ kafka:
   network: tcp
   topic: tasks
   parttion: 0
-  writeDeadline: 10
-  readDeadLine: 10
-  readBatchMinSize: 10e3
-  readbatchMaxSize: 10e6
+  writeDeadline: 1s
+  readDeadLine: 1s
+  readBatchMinSize: 10000
+  readbatchMaxSize: 1000000
+calculator:
+  sleep: 1s

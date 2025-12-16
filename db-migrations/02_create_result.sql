@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-create type result_status_enum as enum ('CREATED', 'STARTED', 'COMPLITED', 'ERROR');
+create type result_status_enum as enum ('CREATED', 'STARTED', 'COMPLETED', 'ERROR');
 
 create table if not exists result(
     id bigint primary key generated always as identity,

@@ -1,6 +1,7 @@
 package aoc_calc
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"go-away-2024/internal/api"
@@ -56,10 +57,14 @@ func (c *Calculator) Start() error {
 		// check if puzzle is already solved
 		res, err := c.repository.GetResult(msg.Id)
 		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				log.Infof("Task id=%d is unknown", msg.Id)
+				continue
+			}
 			return err
 		}
-		if res.RequestId == msg.Id && res.Status == fmt.Sprint(api.COMPLITED) {
-			log.Infof("Task id=%d is already solved!", msg.Id)
+		if res.RequestId == msg.Id && res.Status == fmt.Sprint(api.COMPLETED) {
+			log.Infof("Task id=%d is already solved", msg.Id)
 			continue
 		}
 
@@ -73,13 +78,13 @@ func (c *Calculator) Start() error {
 		res.StartedAt = &startedAt
 		res.CompletedAt = &completedAt
 		if err != nil {
-			log.Infof("Cant't solve task id=%d: %v", msg.Id, err)
+			log.Infof("Couldn't solve task id=%d: %v", msg.Id, err)
 			errorResult := fmt.Sprintf("%v", err)
 			res.Result = &errorResult
 			res.Status = fmt.Sprint(api.ERROR)
 		} else {
 			res.Result = ans
-			res.Status = fmt.Sprint(api.COMPLITED)
+			res.Status = fmt.Sprint(api.COMPLETED)
 		}
 		err = c.repository.SetResult(res)
 		if err != nil {

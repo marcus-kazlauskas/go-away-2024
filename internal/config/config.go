@@ -35,13 +35,14 @@ type DatabaseConfig struct {
 }
 
 type S3Config struct {
-	Host      string `yaml:"host"`
-	Port      string `yaml:"port"`
-	Bucket    string `yaml:"bucket"`
-	AccessKey string `yaml:"access-key"`
-	SecretKey string `yaml:"secret-key"`
-	SslMode   bool   `yaml:"ssl-mode"`
-	Region    string `yaml:"region"`
+	Host        string `yaml:"host"`
+	Port        string `yaml:"port"`
+	Bucket      string `yaml:"bucket"`
+	AccessKey   string `yaml:"access-key"`
+	SecretKey   string `yaml:"secret-key"`
+	SslMode     bool   `yaml:"ssl-mode"`
+	Region      string `yaml:"region"`
+	ContentType string `yaml:"content-type"`
 }
 
 type KafkaConfig struct {

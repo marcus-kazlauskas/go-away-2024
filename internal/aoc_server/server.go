@@ -77,18 +77,18 @@ func SendServerError(c *fiber.Ctx, err error) error {
 func (s *Server) PostTask(c *fiber.Ctx, params api.PostTaskParams) error {
 	request, err := s.saveRequest(params)
 	if err != nil {
-		return SendServerError(c, err)
+		return err
 	}
 
 	s3Link, err := s.uploadPuzzleInput(c, params, request.Id)
 	if err != nil {
-		return SendServerError(c, err)
+		return err
 	}
 
 	request.S3Link = &s3Link
 	err = s.writeTask(request)
 	if err != nil {
-		return SendServerError(c, err)
+		return err
 	}
 
 	response := mappers.RequestEntityToTaskCreatedResponse(request)
@@ -106,7 +106,7 @@ func (s *Server) saveRequest(p api.PostTaskParams) (database.RequestEntity, erro
 }
 
 func (s *Server) uploadPuzzleInput(c *fiber.Ctx, p api.PostTaskParams, id int64) (string, error) {
-	pattern := fmt.Sprintf("Id%dYear%dDay%dPart%d-*.txt", id, p.Year, p.Day, p.Part)
+	pattern := minio.NewPattern(id, p.Year, p.Day, p.Part)
 	tmpFile, err := os.CreateTemp("", pattern)
 	if err != nil {
 		return pattern, err

@@ -9,6 +9,7 @@ import (
 	"go-away-2024/internal/kafka"
 	"go-away-2024/internal/minio"
 	"go-away-2024/internal/puzzles"
+	"os"
 	"time"
 
 	"github.com/gofiber/fiber/v2/log"
@@ -39,7 +40,7 @@ func NewCalculator(
 	}
 }
 
-func (c *Calculator) Start() {
+func (c *Calculator) Start() error {
 	for {
 		time.Sleep(c.sleep)
 
@@ -47,7 +48,7 @@ func (c *Calculator) Start() {
 		msg, err := c.kafkaConnection.ReadTask()
 		if err != nil {
 			if !errors.Is(err, kafka_go.RequestTimedOut) {
-				log.Errorf("Error read message: %v", err)
+				return err
 			}
 			continue
 		}
@@ -55,8 +56,7 @@ func (c *Calculator) Start() {
 		// check if puzzle is already solved
 		res, err := c.repository.GetResult(msg.Id)
 		if err != nil {
-			log.Errorf("Can't get result: %v", err)
-			continue
+			return err
 		}
 		if res.RequestId == msg.Id && res.Status == fmt.Sprint(api.COMPLITED) {
 			log.Infof("Task id=%d is already solved!", msg.Id)
@@ -64,8 +64,6 @@ func (c *Calculator) Start() {
 		}
 
 		// solve puzzle
-		// TODO: download task file from minio
-		// TODO: save error into db
 		startedAt := time.Now()
 		ans, err := c.calculate(msg)
 		completedAt := time.Now()
@@ -75,28 +73,40 @@ func (c *Calculator) Start() {
 		res.StartedAt = &startedAt
 		res.CompletedAt = &completedAt
 		if err != nil {
-			log.Infof("Cant't solve task: %v", err)
+			log.Infof("Cant't solve task id=%d: %v", msg.Id, err)
+			errorResult := fmt.Sprintf("%v", err)
+			res.Result = &errorResult
 			res.Status = fmt.Sprint(api.ERROR)
 		} else {
+			res.Result = ans
 			res.Status = fmt.Sprint(api.COMPLITED)
 		}
 		err = c.repository.SetResult(res)
 		if err != nil {
-			log.Errorf("Can't save result: %v", err)
-		} else {
-			log.Infof("Task id=%d successfully solved!", msg.Id)
+			return err
 		}
+		log.Infof("Solved task id=%d result='%s' status=%s", res.RequestId, *res.Result, res.Status)
 	}
 }
 
 func (c *Calculator) calculate(msg *kafka.TaskMessage) (*string, error) {
+	tmpFile, err := os.CreateTemp("", *msg.S3Link)
+	if err != nil {
+		return nil, err
+	}
+	defer os.Remove(tmpFile.Name())
+
+	if err := c.minioClient.DownloadPuzzleInput(*msg.S3Link, tmpFile); err != nil {
+		return nil, err
+	}
+
 	switch msg.Year {
 	case 2024:
 		switch msg.Day {
 		case 1:
 			switch msg.Part {
 			case 1:
-				return puzzles.Year2024day1part1(msg.S3Link)
+				return puzzles.Year2024Day1Part1(tmpFile)
 			default:
 				return nil, fmt.Errorf("puzzle year=%d day=%d part=%d is not supported", msg.Year, msg.Day, msg.Part)
 			}

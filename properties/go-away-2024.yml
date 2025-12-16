@@ -17,6 +17,7 @@ s3:
   secret-key: aoc-2024
   ssl-mode: false
   region: me-south-1
+  content-type: multipart/form-data
 kafka:
   host: localhost
   port: 9092

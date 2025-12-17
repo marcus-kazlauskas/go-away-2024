@@ -54,7 +54,7 @@ type KafkaConfig struct {
 	WriteDeadline    string `yaml:"writeDeadline"`
 	ReadDeadLine     string `yaml:"readDeadLine"`
 	ReadBatchMinSize int    `yaml:"readBatchMinSize"`
-	ReadbatchMaxSize int    `yaml:"readbatchMaxSize"`
+	ReadBatchMaxSize int    `yaml:"readBatchMaxSize"`
 }
 
 type CalculatorConfig struct {

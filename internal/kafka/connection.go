@@ -26,7 +26,7 @@ func NewKafkaConnection(cfg *config.Config) *KafkaConnection {
 		conn:          conn,
 		writeDeadline: writeDeadline,
 		readDeadLine:  readDeadLine,
-		maxBytes:      cfg.Kafka.ReadbatchMaxSize,
+		maxBytes:      cfg.Kafka.ReadBatchMaxSize,
 	}
 }
 

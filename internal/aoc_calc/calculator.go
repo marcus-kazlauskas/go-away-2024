@@ -105,13 +105,18 @@ func (c *Calculator) calculate(msg *kafka.TaskMessage) (*string, error) {
 		return nil, err
 	}
 
+	scan, err := minio.NewScanner(tmpFile)
+	if err != nil {
+		return nil, err
+	}
+
 	switch msg.Year {
 	case 2024:
 		switch msg.Day {
 		case 1:
 			switch msg.Part {
 			case 1:
-				return puzzles.Year2024Day1Part1(tmpFile)
+				return puzzles.Year2024Day1Part1(scan)
 			default:
 				return nil, fmt.Errorf("puzzle year=%d day=%d part=%d is not supported", msg.Year, msg.Day, msg.Part)
 			}

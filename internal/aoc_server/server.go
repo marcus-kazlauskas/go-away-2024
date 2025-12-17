@@ -10,8 +10,8 @@ import (
 	"go-away-2024/internal/api"
 	"go-away-2024/internal/database"
 	"go-away-2024/internal/kafka"
-	"go-away-2024/internal/mappers"
 	"go-away-2024/internal/minio"
+	"go-away-2024/internal/utils"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
@@ -91,12 +91,12 @@ func (s *Server) PostTask(c *fiber.Ctx, params api.PostTaskParams) error {
 		return err
 	}
 
-	response := mappers.RequestEntityToTaskCreatedResponse(request)
+	response := utils.RequestEntityToTaskCreatedResponse(request)
 	return c.Status(http.StatusOK).JSON(response)
 }
 
 func (s *Server) saveRequest(p api.PostTaskParams) (database.RequestEntity, error) {
-	request := mappers.PostTaskParamsToRequestEntity(p)
+	request := utils.PostTaskParamsToRequestEntity(p)
 	id, err := s.repository.SaveRequest(request)
 	if err != nil {
 		return request, err
@@ -123,7 +123,7 @@ func (s *Server) uploadPuzzleInput(c *fiber.Ctx, p api.PostTaskParams, id int64)
 }
 
 func (s *Server) writeTask(rq database.RequestEntity) error {
-	msg := mappers.RequestEntityToTaskMessage(rq)
+	msg := utils.RequestEntityToTaskMessage(rq)
 	err := s.kafkaConnection.WriteTask(&msg)
 	if err != nil {
 		return err
@@ -139,7 +139,7 @@ func (s *Server) GetTask(c *fiber.Ctx, id int64) error {
 	if err != nil {
 		return SendServerError(c, err)
 	}
-	response := mappers.RequestWithResultEntityToTaskCreatedResponse(rqRes)
+	response := utils.RequestWithResultEntityToTaskCreatedResponse(rqRes)
 	return c.Status(http.StatusOK).JSON(response)
 }
 

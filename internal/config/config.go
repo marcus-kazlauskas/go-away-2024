@@ -64,9 +64,13 @@ type CalculatorConfig struct {
 func GetConfig(filePath string) *Config {
 	config, err := loadConfig(filePath)
 	if err != nil {
-		log.Fatalf("Failed to load configuration: %v", err)
+		Fatal(err)
 	}
 	return config
+}
+
+func Fatal(err error) {
+	log.Fatalf("Failed to load configuration: %v", err)
 }
 
 func loadConfig(filePath string) (*Config, error) {

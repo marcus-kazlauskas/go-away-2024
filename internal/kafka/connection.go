@@ -19,8 +19,14 @@ type KafkaConnection struct {
 func NewKafkaConnection(cfg *config.Config) *KafkaConnection {
 	conn := Connect(cfg)
 
-	writeDeadline, _ := time.ParseDuration(cfg.Kafka.WriteDeadline)
-	readDeadLine, _ := time.ParseDuration(cfg.Kafka.ReadDeadLine)
+	writeDeadline, err := time.ParseDuration(cfg.Kafka.WriteDeadline)
+	if err != nil {
+		config.Fatal(err)
+	}
+	readDeadLine, err := time.ParseDuration(cfg.Kafka.ReadDeadLine)
+	if err != nil {
+		config.Fatal(err)
+	}
 
 	return &KafkaConnection{
 		conn:          conn,

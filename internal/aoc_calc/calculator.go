@@ -30,7 +30,10 @@ func NewCalculator(
 	kafka *kafka.KafkaConnection,
 	cfg *config.Config,
 ) *Calculator {
-	sleep, _ := time.ParseDuration(cfg.Calculator.Sleep)
+	sleep, err := time.ParseDuration(cfg.Calculator.Sleep)
+	if err != nil {
+		config.Fatal(err)
+	}
 
 	log.Infof("Calculator created: sleep=%.1fs", sleep.Seconds())
 	return &Calculator{

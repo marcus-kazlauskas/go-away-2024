@@ -11,7 +11,7 @@ import (
 
 // Defines values for TaskResponseStatus.
 const (
-	COMPLITED TaskResponseStatus = "COMPLITED"
+	COMPLETED TaskResponseStatus = "COMPLETED"
 	CREATED   TaskResponseStatus = "CREATED"
 	ERROR     TaskResponseStatus = "ERROR"
 	STARTED   TaskResponseStatus = "STARTED"

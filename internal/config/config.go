@@ -12,10 +12,11 @@ const MainPath string = "../properties/go-away-2024.yml"
 const TestPath string = "../../properties/go-away-2024.yml"
 
 type Config struct {
-	Server   ServerConfig   `yaml:"server"`
-	Database DatabaseConfig `yaml:"database"`
-	S3       S3Config       `yaml:"s3"`
-	Kafka    KafkaConfig    `yaml:"kafka"`
+	Server     ServerConfig     `yaml:"server"`
+	Database   DatabaseConfig   `yaml:"database"`
+	S3         S3Config         `yaml:"s3"`
+	Kafka      KafkaConfig      `yaml:"kafka"`
+	Calculator CalculatorConfig `yaml:"calculator"`
 }
 
 type ServerConfig struct {
@@ -34,13 +35,14 @@ type DatabaseConfig struct {
 }
 
 type S3Config struct {
-	Host      string `yaml:"host"`
-	Port      string `yaml:"port"`
-	Bucket    string `yaml:"bucket"`
-	AccessKey string `yaml:"access-key"`
-	SecretKey string `yaml:"secret-key"`
-	SslMode   bool   `yaml:"ssl-mode"`
-	Region    string `yaml:"region"`
+	Host        string `yaml:"host"`
+	Port        string `yaml:"port"`
+	Bucket      string `yaml:"bucket"`
+	AccessKey   string `yaml:"access-key"`
+	SecretKey   string `yaml:"secret-key"`
+	SslMode     bool   `yaml:"ssl-mode"`
+	Region      string `yaml:"region"`
+	ContentType string `yaml:"content-type"`
 }
 
 type KafkaConfig struct {
@@ -51,16 +53,24 @@ type KafkaConfig struct {
 	Partition        int    `yaml:"partition"`
 	WriteDeadline    string `yaml:"writeDeadline"`
 	ReadDeadLine     string `yaml:"readDeadLine"`
-	ReadBatchMinSize string `yaml:"readBatchMinSize"`
-	ReadbatchMaxSize string `yaml:"readbatchMaxSize"`
+	ReadBatchMinSize int    `yaml:"readBatchMinSize"`
+	ReadBatchMaxSize int    `yaml:"readBatchMaxSize"`
+}
+
+type CalculatorConfig struct {
+	Sleep string `yaml:"sleep"`
 }
 
 func GetConfig(filePath string) *Config {
 	config, err := loadConfig(filePath)
 	if err != nil {
-		log.Fatalf("Failed to load configuration: %v", err)
+		Fatal(err)
 	}
 	return config
+}
+
+func Fatal(err error) {
+	log.Fatalf("Failed to load configuration: %v", err)
 }
 
 func loadConfig(filePath string) (*Config, error) {

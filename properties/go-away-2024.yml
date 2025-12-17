@@ -17,13 +17,16 @@ s3:
   secret-key: aoc-2024
   ssl-mode: false
   region: me-south-1
+  content-type: multipart/form-data
 kafka:
   host: localhost
   port: 9092
   network: tcp
   topic: tasks
-  parttion: 0
-  writeDeadline: 10
-  readDeadLine: 10
-  readBatchMinSize: 10e3
-  readbatchMaxSize: 10e6
+  partition: 0
+  writeDeadline: 1s
+  readDeadLine: 1s
+  readBatchMinSize: 10000
+  readBatchMaxSize: 1000000
+calculator:
+  sleep: 100ms

@@ -24,7 +24,7 @@ func TestRepository(t *testing.T) {
 
 	config := config.GetConfig(config.TestPath)
 	db := database.Connect(config)
-	repository := database.NewRepository(db)
+	repository := database.NewRepository(config)
 	deleteRequest := func() {
 		for i := range count {
 			DeleteRequest(db, requestIds[i])

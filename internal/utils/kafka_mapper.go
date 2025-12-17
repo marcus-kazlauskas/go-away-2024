@@ -1,4 +1,4 @@
-package mappers
+package utils
 
 import (
 	"go-away-2024/internal/database"

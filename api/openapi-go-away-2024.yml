@@ -112,9 +112,9 @@ components:
           enum:
             - CREATED 
             - STARTED
-            - COMPLITED
+            - COMPLETED
             - ERROR 
-          example: SOLVED
+          example: CREATED
         result:
           description: Task solution result
           type: string
@@ -122,7 +122,7 @@ components:
         message: 
           description: Task solution message
           type: string
-          example: Day 1 Part 1 from AoC 2024 successfully solved with the following result
+          example: Day 1 Part 1 from AoC 2024 accepted
         createdAt:
           description: Task creation date 
           type: string

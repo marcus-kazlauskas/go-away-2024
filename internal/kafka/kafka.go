@@ -17,13 +17,12 @@ type TaskMessage struct {
 	S3Link *string `json:"s3_link"`
 }
 
-func newConn(cfg *config.Config, name string) *kafka.Conn {
+func Connect(cfg *config.Config) *kafka.Conn {
 	address := net.JoinHostPort(cfg.Kafka.Host, cfg.Kafka.Port)
 	conn, err := kafka.DialLeader(context.Background(), cfg.Kafka.Network, address, cfg.Kafka.Topic, cfg.Kafka.Partition)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	log.Infof("Connection to kafka created: name=%s, address=%s", name, address)
+	log.Infof("Connection to kafka created: address=%s", address)
 	return conn
 }

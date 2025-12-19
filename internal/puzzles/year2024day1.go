@@ -1,26 +1,23 @@
 package puzzles
 
 import (
-	"errors"
+	"bufio"
 	"fmt"
 	"go-away-2024/internal/minio"
 	"go-away-2024/internal/utils"
-	"io"
 	"slices"
 	"strconv"
 	"strings"
 )
 
-func Year2024Day1Part1(scan minio.MinioScanner) (*string, error) {
+func Year2024Day1Part1(scan *bufio.Scanner) (*string, error) {
 	var ans int64 = 0
 	a := make([]int64, 0)
 	b := make([]int64, 0)
 	c := make([]int64, 0)
 
-	lineLink, errLink := scan.LineLink()
-
-	for errors.Is(*errLink, nil) {
-		list := strings.Fields(*lineLink)
+	for scan.Scan() {
+		list := strings.Fields(scan.Text())
 		if len(list) != 2 {
 			return nil, minio.DataError()
 		}
@@ -36,11 +33,6 @@ func Year2024Day1Part1(scan minio.MinioScanner) (*string, error) {
 			return nil, minio.DataError()
 		}
 		b = append(b, int64(num))
-
-		lineLink, errLink = scan.LineLink()
-	}
-	if !errors.Is(*errLink, io.EOF) {
-		return nil, *errLink
 	}
 
 	slices.Sort(a)

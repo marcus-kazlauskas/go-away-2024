@@ -53,10 +53,8 @@ type TaskResponse struct {
 // TaskResponseStatus Task solution status
 type TaskResponseStatus string
 
-// PostTaskMultipartBody defines parameters for PostTask.
-type PostTaskMultipartBody struct {
-	File openapi_types.File `json:"file"`
-}
+// PostTaskTextBody defines parameters for PostTask.
+type PostTaskTextBody = openapi_types.File
 
 // PostTaskParams defines parameters for PostTask.
 type PostTaskParams struct {
@@ -70,5 +68,5 @@ type PostTaskParams struct {
 	Part int32 `form:"part" json:"part"`
 }
 
-// PostTaskMultipartRequestBody defines body for PostTask for multipart/form-data ContentType.
-type PostTaskMultipartRequestBody PostTaskMultipartBody
+// PostTaskTextRequestBody defines body for PostTask for text/plain ContentType.
+type PostTaskTextRequestBody = PostTaskTextBody

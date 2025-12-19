@@ -1,6 +1,7 @@
 package aoc_calc
 
 import (
+	"bufio"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -108,10 +109,8 @@ func (c *Calculator) calculate(msg *kafka.TaskMessage) (*string, error) {
 		return nil, err
 	}
 
-	scan, err := minio.NewScanner(tmpFile)
-	if err != nil {
-		return nil, err
-	}
+	tmpFile.Seek(0, 0)
+	scan := bufio.NewScanner(tmpFile)
 
 	switch msg.Year {
 	case 2024:

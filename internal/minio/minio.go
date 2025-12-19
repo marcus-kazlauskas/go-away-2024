@@ -42,6 +42,10 @@ func NewPattern(id int64, year int32, day int32, part int32) string {
 	return fmt.Sprintf("Id%dYear%dDay%dPart%d-*.txt", id, year, day, part)
 }
 
+func DataError() error {
+	return fmt.Errorf("incorrect input data")
+}
+
 func (m *MinioClient) UploadPuzzleInput(name string, object *os.File) error {
 	objectStat, err := object.Stat()
 	if err != nil {

@@ -12,7 +12,7 @@ func TestPuzzles(t *testing.T) {
 	a := assert.New(t)
 
 	t.Run("Year 2024 day 1 part 1", func(t *testing.T) {
-		file, err := os.Open("year2024day1part1_test.txt")
+		file, err := os.Open("year2024day1_test.txt")
 		a.Nil(err)
 		scan := bufio.NewScanner(file)
 		ans, err := Year2024Day1Part1(scan)
@@ -22,7 +22,7 @@ func TestPuzzles(t *testing.T) {
 	})
 
 	t.Run("Year 2024 day 1 part 2", func(t *testing.T) {
-		file, err := os.Open("year2024day1part1_test.txt")
+		file, err := os.Open("year2024day1_test.txt")
 		a.Nil(err)
 		scan := bufio.NewScanner(file)
 		ans, err := Year2024Day1Part2(scan)

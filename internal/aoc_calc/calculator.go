@@ -119,6 +119,8 @@ func (c *Calculator) calculate(msg *kafka.TaskMessage) (*string, error) {
 			switch msg.Part {
 			case 1:
 				return puzzles.Year2024Day1Part1(scan)
+			case 2:
+				return puzzles.Year2024Day1Part2(scan)
 			default:
 				return nil, fmt.Errorf("puzzle year=%d day=%d part=%d is not supported", msg.Year, msg.Day, msg.Part)
 			}

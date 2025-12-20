@@ -47,3 +47,48 @@ func Year2024Day1Part1(scan *bufio.Scanner) (*string, error) {
 	result := fmt.Sprint(ans)
 	return &result, nil
 }
+
+func Year2024Day1Part2(scan *bufio.Scanner) (*string, error) {
+	var ans int64 = 0
+	a := make(map[int]int)
+	b := make(map[int]int)
+
+	for scan.Scan() {
+		list := strings.Fields(scan.Text())
+		if len(list) != 2 {
+			return nil, minio.DataError()
+		}
+
+		num, err := strconv.Atoi(list[0])
+		if err != nil {
+			return nil, minio.DataError()
+		}
+		_, exists := a[num]
+		if exists {
+			a[num] += 1
+		} else {
+			a[num] = 1
+		}
+
+		num, err = strconv.Atoi(list[1])
+		if err != nil {
+			return nil, minio.DataError()
+		}
+		_, exists = b[num]
+		if exists {
+			b[num] += 1
+		} else {
+			b[num] = 1
+		}
+	}
+
+	for k, v := range a {
+		count, exists := b[k]
+		if exists {
+			ans += int64(k * v * count)
+		}
+	}
+
+	result := fmt.Sprint(ans)
+	return &result, nil
+}

@@ -5,8 +5,8 @@ import (
 	"go-away-2024/internal/config"
 
 	"github.com/gofiber/fiber/v2/log"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
 )
 
 func Connect(cfg *config.Config) *sqlx.DB {
@@ -20,7 +20,7 @@ func Connect(cfg *config.Config) *sqlx.DB {
 		cfg.Database.SslMode,
 	)
 
-	db := sqlx.MustConnect(cfg.Database.Driver, dsn)
+	db := sqlx.MustConnect("pgx", dsn)
 	log.Infof("Connected to database: %s", dsn)
 	return db
 }

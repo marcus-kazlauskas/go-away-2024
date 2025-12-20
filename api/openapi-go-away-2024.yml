@@ -41,15 +41,10 @@ paths:
         description: Data for task solving
         required: true
         content:
-          multipart/form-data:
+          text/plain:
             schema:
-              type: object
-              required:
-                - file
-              properties:
-                file: 
-                  type: string
-                  format: binary
+              type: string
+              format: binary
       responses:
         "200":
           description: Successful operation 

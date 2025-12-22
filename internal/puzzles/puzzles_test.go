@@ -18,6 +18,7 @@ func TestPuzzles(t *testing.T) {
 		ans, err := Year2024Day1Part1(scan)
 
 		a.Nil(err)
+		a.NotNil(ans)
 		a.Equal("11", *ans)
 	})
 
@@ -28,6 +29,18 @@ func TestPuzzles(t *testing.T) {
 		ans, err := Year2024Day1Part2(scan)
 
 		a.Nil(err)
+		a.NotNil(ans)
 		a.Equal("31", *ans)
+	})
+
+	t.Run("Year 2025 day 1", func(t *testing.T) {
+		file, err := os.Open("year2025day1_test.txt")
+		a.Nil(err)
+		scan := bufio.NewScanner(file)
+		ans, err := Year2025Day1Part1(scan)
+
+		a.Nil(err)
+		a.NotNil(ans)
+		a.Equal("4", *ans)
 	})
 }

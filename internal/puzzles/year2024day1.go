@@ -38,7 +38,7 @@ func Year2024Day1Part1(scan *bufio.Scanner) (*string, error) {
 	slices.Sort(a)
 	slices.Sort(b)
 	for i := range len(a) {
-		c = append(c, utils.Abs(a[i]-b[i]))
+		c = append(c, utils.Abs64(a[i]-b[i]))
 	}
 	for i := range len(a) {
 		ans += c[i]

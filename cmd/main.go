@@ -15,6 +15,7 @@ import (
 )
 
 func main() {
+	log.SetLevel(log.LevelInfo)
 	config := config.GetConfig(config.MainPath)
 	repository := database.NewRepository(config)
 	minio := minio.NewClient(config)

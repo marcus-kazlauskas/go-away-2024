@@ -33,7 +33,7 @@ func TestPuzzles(t *testing.T) {
 		a.Equal("31", *ans)
 	})
 
-	t.Run("Year 2025 day 1", func(t *testing.T) {
+	t.Run("Year 2025 day 1 part 1", func(t *testing.T) {
 		file, err := os.Open("year2025day1_test.txt")
 		a.Nil(err)
 		scan := bufio.NewScanner(file)
@@ -41,6 +41,17 @@ func TestPuzzles(t *testing.T) {
 
 		a.Nil(err)
 		a.NotNil(ans)
-		a.Equal("4", *ans)
+		a.Equal("7", *ans)
+	})
+
+	t.Run("Year 2025 day 1 part 2", func(t *testing.T) {
+		file, err := os.Open("year2025day1_test.txt")
+		a.Nil(err)
+		scan := bufio.NewScanner(file)
+		ans, err := Year2025Day1Part2(scan)
+
+		a.Nil(err)
+		a.NotNil(ans)
+		a.Equal("16", *ans)
 	})
 }

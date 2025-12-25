@@ -14,7 +14,7 @@ services:
       - "aoc-postgres-data:/var/lib/postgresql/data"
   
   aoc-kafka:
-    image: apache/kafka-native:3.9.1
+    image: apache/kafka:3.9.1
     hostname: kafka
     container_name: aoc-kafka
     ports:
@@ -32,7 +32,8 @@ services:
       KAFKA_NUM_PARTITIONS: "1"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
-      KAFKA_LOG_RETENTION_HOURS: "168"
+      KAFKA_LOG_RETENTION_HOURS: "72"
+      KAFKA_LOG_SEGMENT_BYTES: "20480"
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
 
   aoc-kafka-ui:

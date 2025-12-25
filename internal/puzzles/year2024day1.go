@@ -3,7 +3,6 @@ package puzzles
 import (
 	"bufio"
 	"fmt"
-	"go-away-2024/internal/minio"
 	"go-away-2024/internal/utils"
 	"slices"
 	"strconv"
@@ -19,18 +18,18 @@ func Year2024Day1Part1(scan *bufio.Scanner) (*string, error) {
 	for scan.Scan() {
 		list := strings.Fields(scan.Text())
 		if len(list) != 2 {
-			return nil, minio.DataError()
+			return nil, DataError()
 		}
 
 		num, err := strconv.Atoi(list[0])
 		if err != nil {
-			return nil, minio.DataError()
+			return nil, DataError()
 		}
 		a = append(a, int64(num))
 
 		num, err = strconv.Atoi(list[1])
 		if err != nil {
-			return nil, minio.DataError()
+			return nil, DataError()
 		}
 		b = append(b, int64(num))
 	}
@@ -56,12 +55,12 @@ func Year2024Day1Part2(scan *bufio.Scanner) (*string, error) {
 	for scan.Scan() {
 		list := strings.Fields(scan.Text())
 		if len(list) != 2 {
-			return nil, minio.DataError()
+			return nil, DataError()
 		}
 
 		num, err := strconv.Atoi(list[0])
 		if err != nil {
-			return nil, minio.DataError()
+			return nil, DataError()
 		}
 		_, exists := a[num]
 		if exists {
@@ -72,7 +71,7 @@ func Year2024Day1Part2(scan *bufio.Scanner) (*string, error) {
 
 		num, err = strconv.Atoi(list[1])
 		if err != nil {
-			return nil, minio.DataError()
+			return nil, DataError()
 		}
 		_, exists = b[num]
 		if exists {

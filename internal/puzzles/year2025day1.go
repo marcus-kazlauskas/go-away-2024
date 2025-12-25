@@ -3,11 +3,12 @@ package puzzles
 import (
 	"bufio"
 	"fmt"
-	"go-away-2024/internal/minio"
 	"go-away-2024/internal/utils"
 	"strconv"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/gofiber/fiber/v2/log"
 )
 
 func Year2025Day1Part1(scan *bufio.Scanner) (*string, error) {
@@ -21,7 +22,7 @@ func Year2025Day1Part1(scan *bufio.Scanner) (*string, error) {
 		rotationStr := strings.Trim(line, "LR")
 		rotation, err := strconv.Atoi(rotationStr)
 		if err != nil {
-			return nil, minio.DataError()
+			return nil, DataError()
 		}
 
 		switch firstRune {
@@ -30,7 +31,7 @@ func Year2025Day1Part1(scan *bufio.Scanner) (*string, error) {
 		case 'R':
 			pos = rotate(pos, rotation)
 		default:
-			return nil, minio.DataError()
+			return nil, DataError()
 		}
 
 		if pos == 0 {
@@ -63,7 +64,7 @@ func Year2025Day1Part2(scan *bufio.Scanner) (*string, error) {
 		rotationStr := strings.Trim(line, "LR")
 		rotation, err := strconv.Atoi(rotationStr)
 		if err != nil {
-			return nil, minio.DataError()
+			return nil, DataError()
 		}
 
 		switch firstRune {
@@ -72,7 +73,7 @@ func Year2025Day1Part2(scan *bufio.Scanner) (*string, error) {
 		case 'R':
 			pos, clicks = rotateV2(pos, rotation)
 		default:
-			return nil, minio.DataError()
+			return nil, DataError()
 		}
 
 		ans += clicks
@@ -93,5 +94,9 @@ func rotateV2(position int, rotation int) (pos int, clicks int) {
 	} else {
 		pos = delta % 100
 	}
+	log.Debugf(
+		"Rotate: position=%d rotation=%d -> pos=%d clicks=%d",
+		position, rotation, pos, clicks,
+	)
 	return
 }

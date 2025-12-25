@@ -65,4 +65,15 @@ func TestPuzzles(t *testing.T) {
 		a.NotNil(ans)
 		a.Equal("1227775554", *ans)
 	})
+
+	t.Run("Year 2025 day 2 part 2", func(t *testing.T) {
+		file, err := os.Open("year2025day2_test.txt")
+		a.Nil(err)
+		scan := bufio.NewScanner(file)
+		ans, err := Year2025Day2Part2(scan)
+
+		a.Nil(err)
+		a.NotNil(ans)
+		a.Equal("4174379265", *ans)
+	})
 }

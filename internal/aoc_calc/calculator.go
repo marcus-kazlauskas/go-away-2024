@@ -147,6 +147,13 @@ func (c *Calculator) calculate(msg *kafka.TaskMessage) (*string, error) {
 			default:
 				return nil, PartError(msg.Year, msg.Day, msg.Part)
 			}
+		case 3:
+			switch msg.Part {
+			case 1:
+				return puzzles.Year2025Day3Part1(scan)
+			default:
+				return nil, PartError(msg.Year, msg.Day, msg.Part)
+			}
 		default:
 			return nil, DayError(msg.Year, msg.Day)
 		}

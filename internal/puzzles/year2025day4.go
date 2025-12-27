@@ -9,6 +9,19 @@ import (
 
 func Year2025Day4Part1(scan *bufio.Scanner) (*string, error) {
 	var ans int = 0
+
+	grid, err := getGrid(scan)
+	if err != nil {
+		return nil, err
+	}
+
+	ans = countRolls(grid)
+
+	result := fmt.Sprint(ans)
+	return &result, nil
+}
+
+func getGrid(scan *bufio.Scanner) ([][]bool, error) {
 	grid := make([][]bool, 0)
 
 	scan.Scan()
@@ -32,11 +45,7 @@ func Year2025Day4Part1(scan *bufio.Scanner) (*string, error) {
 	}
 
 	grid = append(grid, appendStubLine(n))
-
-	ans = countRolls(grid)
-
-	result := fmt.Sprint(ans)
-	return &result, nil
+	return grid, nil
 }
 
 func appendStubLine(n int) []bool {
@@ -112,5 +121,51 @@ func checkRoll(grid [][]bool, i int, j int) bool {
 		return true
 	} else {
 		return false
+	}
+}
+
+func Year2025Day4Part2(scan *bufio.Scanner) (*string, error) {
+	var ans int = 0
+
+	grid, err := getGrid(scan)
+	if err != nil {
+		return nil, err
+	}
+
+	count, rolls := countRollsV2(grid)
+	ans += count
+	for count > 0 {
+		log.Debugf("Removed %d rolls", count)
+		removeRolls(grid, rolls)
+		count, rolls = countRollsV2(grid)
+		ans += count
+	}
+
+	result := fmt.Sprint(ans)
+	return &result, nil
+}
+
+func countRollsV2(grid [][]bool) (int, [][]int) {
+	count := 0
+	rolls := make([][]int, 0)
+	for i := 1; i <= len(grid)-2; i++ {
+		for j := 1; j <= len(grid[0])-2; j++ {
+			if checkRoll(grid, i, j) {
+				count++
+				roll := make([]int, 0)
+				roll = append(roll, i)
+				roll = append(roll, j)
+				rolls = append(rolls, roll)
+			}
+		}
+	}
+	return count, rolls
+}
+
+func removeRolls(grid [][]bool, rolls [][]int) {
+	for _, p := range rolls {
+		i := p[0]
+		j := p[1]
+		grid[i][j] = false
 	}
 }

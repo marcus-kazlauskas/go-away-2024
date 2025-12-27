@@ -8,8 +8,8 @@ import (
 	yaml "gopkg.in/yaml.v3"
 )
 
-const MainPath string = "../properties/go-away-2024.yml"
-const TestPath string = "../../properties/go-away-2024.yml"
+const MAIN_PATH string = "../properties/go-away-2024.yml"
+const TEST_PATH string = "../../properties/go-away-2024.yml"
 
 type Config struct {
 	Server     ServerConfig     `yaml:"server"`

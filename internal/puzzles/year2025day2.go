@@ -90,7 +90,7 @@ func Year2025Day2Part2(scan *bufio.Scanner) (*string, error) {
 		for id := firstId; id <= lastId; id++ {
 			digits := getDigits(id)
 			if checkIdV2(digits) {
-				log.Debugf("Invalid id found: id=%d len()=%d digits=%s", id, len(digits), digits)
+				log.Debugf("Invalid id found: id=%d len()=%d digits=%v", id, len(digits), digits)
 				ans += id
 			}
 		}

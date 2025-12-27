@@ -14,7 +14,7 @@ import (
 func TestRepository(t *testing.T) {
 	a := assert.New(t)
 
-	config := config.GetConfig(config.TestPath)
+	config := config.GetConfig(config.TEST_PATH)
 	db := Connect(config)
 	repository := NewRepository(config)
 

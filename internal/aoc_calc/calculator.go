@@ -67,7 +67,7 @@ func (c *Calculator) Start() error {
 			}
 			return err
 		}
-		if res.RequestId == msg.Id && res.Status == fmt.Sprint(api.COMPLETED) {
+		if res.RequestId == msg.Id && res.Status != fmt.Sprint(api.CREATED) {
 			log.Infof("Task id=%d is already solved", msg.Id)
 			continue
 		}
@@ -153,6 +153,13 @@ func (c *Calculator) calculate(msg *kafka.TaskMessage) (*string, error) {
 				return puzzles.Year2025Day3Part1(scan)
 			case 2:
 				return puzzles.Year2025Day3Part2(scan)
+			default:
+				return nil, PartError(msg.Year, msg.Day, msg.Part)
+			}
+		case 4:
+			switch msg.Part {
+			case 1:
+				return puzzles.Year2025Day4Part1(scan)
 			default:
 				return nil, PartError(msg.Year, msg.Day, msg.Part)
 			}

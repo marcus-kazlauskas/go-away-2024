@@ -15,7 +15,8 @@ import (
 )
 
 func main() {
-	config := config.GetConfig(config.MainPath)
+	log.SetLevel(log.LevelInfo)
+	config := config.GetConfig(config.MAIN_PATH)
 	repository := database.NewRepository(config)
 	minio := minio.NewClient(config)
 	kafka := kafka.NewKafkaConnection(config)

@@ -67,7 +67,7 @@ func (c *Calculator) Start() error {
 			}
 			return err
 		}
-		if res.RequestId == msg.Id && res.Status == fmt.Sprint(api.COMPLETED) {
+		if res.RequestId == msg.Id && res.Status != fmt.Sprint(api.CREATED) {
 			log.Infof("Task id=%d is already solved", msg.Id)
 			continue
 		}
@@ -122,13 +122,74 @@ func (c *Calculator) calculate(msg *kafka.TaskMessage) (*string, error) {
 			case 2:
 				return puzzles.Year2024Day1Part2(scan)
 			default:
-				return nil, fmt.Errorf("puzzle year=%d day=%d part=%d is not supported", msg.Year, msg.Day, msg.Part)
+				return nil, PartError(msg.Year, msg.Day, msg.Part)
 			}
 		default:
-			return nil, fmt.Errorf("puzzle year=%d day=%d is not supported", msg.Year, msg.Day)
+			return nil, DayError(msg.Year, msg.Day)
 		}
-	// TODO: create year 2025 implementation
+	case 2025:
+		switch msg.Day {
+		case 1:
+			switch msg.Part {
+			case 1:
+				return puzzles.Year2025Day1Part1(scan)
+			case 2:
+				return puzzles.Year2025Day1Part2(scan)
+			default:
+				return nil, PartError(msg.Year, msg.Day, msg.Part)
+			}
+		case 2:
+			switch msg.Part {
+			case 1:
+				return puzzles.Year2025Day2Part1(scan)
+			case 2:
+				return puzzles.Year2025Day2Part2(scan)
+			default:
+				return nil, PartError(msg.Year, msg.Day, msg.Part)
+			}
+		case 3:
+			switch msg.Part {
+			case 1:
+				return puzzles.Year2025Day3Part1(scan)
+			case 2:
+				return puzzles.Year2025Day3Part2(scan)
+			default:
+				return nil, PartError(msg.Year, msg.Day, msg.Part)
+			}
+		case 4:
+			switch msg.Part {
+			case 1:
+				return puzzles.Year2025Day4Part1(scan)
+			case 2:
+				return puzzles.Year2025Day4Part2(scan)
+			default:
+				return nil, PartError(msg.Year, msg.Day, msg.Part)
+			}
+		case 5:
+			switch msg.Part {
+			case 1:
+				return puzzles.Year2025Day5Part1(scan)
+			case 2:
+				return puzzles.Year2025Day5Part2(scan)
+			default:
+				return nil, PartError(msg.Year, msg.Day, msg.Part)
+			}
+		default:
+			return nil, DayError(msg.Year, msg.Day)
+		}
 	default:
-		return nil, fmt.Errorf("puzzle year=%d is not supported", msg.Year)
+		return nil, YearError(msg.Year)
 	}
+}
+
+func YearError(year int32) error {
+	return fmt.Errorf("puzzle year=%d is not supported", year)
+}
+
+func DayError(year int32, day int32) error {
+	return fmt.Errorf("puzzle year=%d day=%d is not supported", year, day)
+}
+
+func PartError(year int32, day int32, part int32) error {
+	return fmt.Errorf("puzzle year=%d day=%d part=%d is not supported", year, day, part)
 }

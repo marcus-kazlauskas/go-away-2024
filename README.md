@@ -11,7 +11,7 @@ Version 1.0.0
 | Year of the event | Days with part 1 | Days with part 2 |
 |:------------------|:-----------------|:-----------------|
 | 2024              | 1                | 1                |
-| 2025              | 1-5              | 1-5              |
+| 2025              | 1-6              | 1-5              |
 
 ### API description
 

@@ -78,7 +78,6 @@ func (c *Calculator) Start() error {
 		completedAt := time.Now()
 
 		// save result
-		res.Result = ans
 		res.StartedAt = &startedAt
 		res.CompletedAt = &completedAt
 		if err != nil {

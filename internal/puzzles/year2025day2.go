@@ -10,7 +10,7 @@ import (
 )
 
 func Year2025Day2Part1(scan *bufio.Scanner) (*string, error) {
-	var ans int = 0
+	var ans = 0
 
 	scan.Scan()
 	line := scan.Text()
@@ -73,7 +73,7 @@ func checkId(digits []int) bool {
 }
 
 func Year2025Day2Part2(scan *bufio.Scanner) (*string, error) {
-	var ans int = 0
+	var ans = 0
 
 	scan.Scan()
 	line := scan.Text()

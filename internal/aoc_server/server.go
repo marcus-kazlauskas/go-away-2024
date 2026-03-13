@@ -111,8 +111,15 @@ func (s *Server) uploadPuzzleInput(c *fiber.Ctx, p api.PostTaskParams, id int64)
 	if err != nil {
 		return pattern, err
 	}
-	defer os.Remove(tmpFile.Name())
-	tmpFile.Write(c.Body())
+	defer func() {
+		if err := os.Remove(tmpFile.Name()); err != nil {
+			log.Error(err)
+		}
+	}()
+
+	if _, err = tmpFile.Write(c.Body()); err != nil {
+		log.Error(err)
+	}
 
 	err = s.minioClient.UploadPuzzleInput(pattern, tmpFile)
 	if err != nil {
@@ -124,8 +131,7 @@ func (s *Server) uploadPuzzleInput(c *fiber.Ctx, p api.PostTaskParams, id int64)
 
 func (s *Server) writeTask(rq database.RequestEntity) error {
 	msg := utils.RequestEntityToTaskMessage(rq)
-	err := s.kafkaConnection.WriteTask(&msg)
-	if err != nil {
+	if err := s.kafkaConnection.WriteTask(&msg); err != nil {
 		return err
 	}
 

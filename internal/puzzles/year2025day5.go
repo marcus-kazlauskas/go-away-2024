@@ -11,7 +11,7 @@ import (
 )
 
 func Year2025Day5Part1(scan *bufio.Scanner) (*string, error) {
-	var ans int = 0
+	var ans = 0
 	fresh := make([][]int64, 0)
 	write := true
 
@@ -78,7 +78,7 @@ func checkFresh(id int64, fresh [][]int64) bool {
 }
 
 func Year2025Day5Part2(scan *bufio.Scanner) (*string, error) {
-	var ans int64 = 0
+	var ans int64
 	freshIds := make([][]int64, 0)
 
 	for scan.Scan() {

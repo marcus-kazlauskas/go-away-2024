@@ -8,7 +8,7 @@ import (
 )
 
 func Year2025Day4Part1(scan *bufio.Scanner) (*string, error) {
-	var ans int = 0
+	var ans int
 
 	grid, err := getGrid(scan)
 	if err != nil {
@@ -125,7 +125,7 @@ func checkRoll(grid [][]bool, i int, j int) bool {
 }
 
 func Year2025Day4Part2(scan *bufio.Scanner) (*string, error) {
-	var ans int = 0
+	var ans = 0
 
 	grid, err := getGrid(scan)
 	if err != nil {

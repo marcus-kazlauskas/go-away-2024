@@ -67,7 +67,7 @@ func (c *Calculator) Start() error {
 			}
 			return err
 		}
-		if res.RequestId == msg.Id && res.Status != fmt.Sprint(api.CREATED) {
+		if res.Status == fmt.Sprint(api.COMPLETED) || res.Status == fmt.Sprint(api.ERROR) {
 			log.Infof("Task id=%d is already solved", msg.Id)
 			continue
 		}
@@ -102,13 +102,20 @@ func (c *Calculator) calculate(msg *kafka.TaskMessage) (*string, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer os.Remove(tmpFile.Name())
+	defer func() {
+		if err := os.Remove(tmpFile.Name()); err != nil {
+			log.Error(err)
+		}
+	}()
 
 	if err := c.minioClient.DownloadPuzzleInput(*msg.S3Link, tmpFile); err != nil {
 		return nil, err
 	}
 
-	tmpFile.Seek(0, 0)
+	if _, err = tmpFile.Seek(0, 0); err != nil {
+		log.Error(err)
+	}
+
 	scan := bufio.NewScanner(tmpFile)
 
 	switch msg.Year {

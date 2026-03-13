@@ -37,7 +37,9 @@ func NewKafkaConnection(cfg *config.Config) *KafkaConnection {
 }
 
 func (k *KafkaConnection) WriteTask(msg *TaskMessage) error {
-	k.conn.SetWriteDeadline(time.Now().Add(k.writeDeadline))
+	if err := k.conn.SetWriteDeadline(time.Now().Add(k.writeDeadline)); err != nil {
+		log.Error(err)
+	}
 
 	data, err := json.Marshal(msg)
 	if err != nil {
@@ -54,7 +56,9 @@ func (k *KafkaConnection) WriteTask(msg *TaskMessage) error {
 }
 
 func (k *KafkaConnection) ReadTask() (*TaskMessage, error) {
-	k.conn.SetReadDeadline(time.Now().Add(k.readDeadLine))
+	if err := k.conn.SetReadDeadline(time.Now().Add(k.readDeadLine)); err != nil {
+		log.Error(err)
+	}
 
 	msg, err := k.conn.ReadMessage(k.maxBytes)
 	if err != nil {

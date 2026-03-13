@@ -12,8 +12,8 @@ import (
 )
 
 func Year2025Day1Part1(scan *bufio.Scanner) (*string, error) {
-	var ans int = 0
-	var pos int = 50
+	var ans = 0
+	var pos = 50
 
 	for scan.Scan() {
 		line := scan.Text()
@@ -53,9 +53,9 @@ func rotate(position int, rotation int) int {
 }
 
 func Year2025Day1Part2(scan *bufio.Scanner) (*string, error) {
-	var ans int = 0
-	var pos int = 50
-	var clicks int = 0
+	var ans = 0
+	var pos = 50
+	var clicks int
 
 	for scan.Scan() {
 		line := scan.Text()

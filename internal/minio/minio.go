@@ -45,9 +45,11 @@ func NewPattern(id int64, year int32, day int32, part int32) string {
 func (m *MinioClient) UploadPuzzleInput(name string, object *os.File) error {
 	objectStat, err := object.Stat()
 	if err != nil {
-		return err
+		log.Error(err)
 	}
-	object.Seek(0, 0)
+	if _, err = object.Seek(0, 0); err != nil {
+		log.Error(err)
+	}
 
 	info, err := m.c.PutObject(
 		context.Background(),
@@ -66,14 +68,18 @@ func (m *MinioClient) DownloadPuzzleInput(name string, object *os.File) error {
 	if err != nil {
 		return err
 	}
-	defer reader.Close()
+	defer func() {
+		if err := reader.Close(); err != nil {
+			log.Error(err)
+		}
+	}()
 
 	stat, err := reader.Stat()
 	if err != nil {
-		return err
+		log.Error(err)
 	}
 	if _, err := io.CopyN(object, reader, stat.Size); err != nil {
-		return err
+		log.Error(err)
 	}
 	log.Infof("Downloaded %s of size %d", name, stat.Size)
 	return nil

@@ -13,7 +13,7 @@ import (
 const NUMBER_OF_BATTERIES = 12
 
 func Year2025Day3Part1(scan *bufio.Scanner) (*string, error) {
-	var ans int = 0
+	var ans = 0
 
 	for scan.Scan() {
 		line := scan.Text()

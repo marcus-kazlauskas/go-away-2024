@@ -57,7 +57,7 @@ func getDigits(id int) (digits []int) {
 	digits = append(digits, digit)
 	for number > 0 {
 		digit = number % 10
-		number = number / 10
+		number /= 10
 		digits = append(digits, digit)
 	}
 	return

@@ -175,7 +175,7 @@ func runeArrayToInt64(num []rune) int64 {
 		if r != ' ' {
 			n = int64(r - '0')
 		}
-		ans += int64(n) * utils.Pow64(10, len(num)-i-1)
+		ans += n * utils.Pow64(10, len(num)-i-1)
 	}
 	for i := len(num) - 1; i >= 0; i-- {
 		if num[i] != ' ' {

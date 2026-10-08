@@ -1,0 +1,44 @@
+version: "2"
+
+run:
+  go: "1.25"
+
+linters:
+  default: standard
+  enable:
+    - errorlint
+    - gocritic
+    - misspell
+    - unconvert
+    - nilerr
+    - sqlclosecheck
+    - rowserrcheck
+    - copyloopvar
+    - gosec
+    - revive
+  settings:
+    revive:
+      rules:
+        - name: exported
+          disabled: true
+        - name: package-comments
+          disabled: true
+        - name: var-naming
+          disabled: true
+    gosec:
+      excludes:
+        - G304 # config file path from variable
+        - G117 # Password/AccessKey fields in Config
+        - G703 # CreateTemp pattern built from S3 link
+  exclusions:
+    generated: strict
+    rules:
+      - path: _test\.go
+        linters:
+          - gosec
+          - errcheck
+
+formatters:
+  enable:
+    - gofmt
+    - goimports

@@ -25,7 +25,8 @@ go test ./...
 go test ./internal/puzzles -run 'TestPuzzles/Year_2025_day_6_part_1'   # single subtest
 
 # Lint
-golangci-lint run
+golangci-lint run          # config: .golangci.yml (v2)
+golangci-lint fmt          # gofmt + goimports
 
 # Regenerate API code after editing api/openapi-go-away-2024.yml — run from internal/api
 cd internal/api

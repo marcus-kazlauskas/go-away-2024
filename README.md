@@ -29,6 +29,11 @@ cd ../..
 
 ### Launch application
 
+Requirements:
+
+- ***Go 1.25*** or higher
+- ***Podman Desktop*** (or Docker Desktop)
+
 Run local environment:
 
 ```shell

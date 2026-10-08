@@ -34,9 +34,9 @@ golangci-lint fmt          # gofmt + goimports
 go generate ./...
 ```
 
-The same steps are in `Taskfile.yml` ([Task](https://taskfile.dev) v3, run from the repo root): `task` / `task build` (generate → lint → test → `go build ./...`), plus `task generate`, `task lint`, `task test` and `task test:unit` (`internal/puzzles` only, no infra needed).
+`Taskfile.yml` (Task v3, run from the repo root) wraps these steps; see `task --list`. `task` runs generate → lint → test → build, the same check as CI (`.github/workflows/verify-pr.yaml`): run it before finishing a change. `task test` and `task run` apply migrations to the local DB first; `task test:unit` is the only one that needs no local environment.
 
-`internal/database` tests are integration tests. They need the local Postgres running with migrations applied, and they load config from `config.TEST_PATH` (`../../properties/go-away-2024.yml`). `internal/puzzles` tests are pure and open their `*_test.txt` fixtures by relative path.
+`internal/database` tests are integration tests. They need the local Postgres running with migrations applied (`task test` applies them), and they load config from `config.TEST_PATH` (`../../properties/go-away-2024.yml`). `internal/puzzles` tests are pure and open their `*_test.txt` fixtures by relative path.
 
 Imports: keep `go-away-2024/...` in the same block as stdlib (the existing style); do not regroup them. goimports accepts either style, so the linter will not catch this.
 

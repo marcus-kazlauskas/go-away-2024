@@ -11,7 +11,7 @@ Requirements:
 - ***Go 1.26*** or higher
 - ***Podman Desktop*** (or Docker Desktop)
 - [***Goose***](https://github.com/pressly/goose)
-- [***Task***](https://taskfile.dev/docs/installation)
+- [***Task***](https://taskfile.dev/docs/installation) v3
 - [***golangci-lint***](https://golangci-lint.run/docs/welcome/install/local/) v2
 - [***oapi-codegen***](https://github.com/oapi-codegen/oapi-codegen) v2
 
@@ -32,18 +32,6 @@ You can generate actual API interface:
 go generate ./...
 ```
 
-### Build
-
-Tasks are described in [Taskfile.yml](Taskfile.yml) and run from the project root:
-
-```shell
-task              # generate, lint, test and build
-task generate     # regenerate API code
-task lint         # golangci-lint run
-task test         # all tests (database tests need local environment and migrations)
-task test:unit    # puzzle tests only, no local environment needed
-```
-
 ### Launch application
 
 Run local environment:
@@ -54,19 +42,24 @@ podman compose up -d
 cd ..
 ```
 
-Apply all available migrations:
+Apply all available migrations and start application:
 
 ```shell
-cd db-migrations
-goose up
-cd ..
+task run
 ```
 
-Start application:
+### Build
+
+Tasks are described in [Taskfile.yml](Taskfile.yml) and run from the project root:
 
 ```shell
-cd cmd
-go run main.go
+task              # generate, lint, test and build
+task generate     # regenerate API code
+task lint         # golangci-lint run
+task migrate      # apply DB migrations (needs local environment)
+task test         # apply migrations and run all tests (needs local environment)
+task test:unit    # puzzle tests only, no local environment needed
+task run          # apply migrations and start application (needs local environment)
 ```
 
 ### Application diagram

@@ -30,19 +30,24 @@ func TestRepository(t *testing.T) {
 	}
 	defer deleteRequests()
 
+	// Postgres timestamptz keeps microseconds, Linux clock gives nanoseconds
+	now := func() time.Time {
+		return time.Now().Truncate(time.Microsecond)
+	}
+
 	requestEntity := RequestEntity{
 		Year:      2024,
 		Day:       1,
 		Part:      1,
-		CreatedAt: time.Now(),
+		CreatedAt: now(),
 	}
 	s3Link := "S3Link"
 
 	resultEntity := ResultEntity{}
 	status := fmt.Sprint(api.COMPLETED)
 	result := "answer"
-	startedAt := time.Now()
-	completedAt := time.Now()
+	startedAt := now()
+	completedAt := now()
 
 	t.Run("Should save request", func(t *testing.T) {
 		id, err := repository.SaveRequest(requestEntity)

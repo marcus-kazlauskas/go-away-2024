@@ -1,0 +1,59 @@
+name: verify-pr
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: task build
+    runs-on: ubuntu-latest
+
+    # internal/database tests need Postgres; same role and database as local-env/postgres/init.sql
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: aoc-2024
+          POSTGRES_PASSWORD: aoc-2024
+          POSTGRES_DB: advent-of-code
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U aoc-2024 -d advent-of-code"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      # Same versions as generated code and local tooling
+      - name: Install tools
+        run: |
+          go install github.com/go-task/task/v3/cmd/task@v3.54.0
+          go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.8.0
+          go install github.com/pressly/goose/v3/cmd/goose@v3.28.0
+
+      - uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.14.0
+          install-only: true
+
+      # task test applies migrations; goose reads the connection string from db-migrations/.env
+      - name: Build
+        run: task
+
+      - name: Check generated code is up to date
+        run: git diff --exit-code -- internal/api

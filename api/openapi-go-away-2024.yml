@@ -49,13 +49,13 @@ paths:
         "200":
           description: Successful operation 
           content:
-            applicaton/json:
+            application/json:
               schema:
                 $ref: "#/components/schemas/TaskResponse"
         default:
           description: Unexpected error
           content:
-            applicaton/json:
+            application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
   /task/{id}:
@@ -77,13 +77,13 @@ paths:
         "200":
           description: Successful operation 
           content:
-            applicaton/json:
+            application/json:
               schema:
                 $ref: "#/components/schemas/TaskResponse"
         default:
           description: Unexpected error
           content:
-            applicaton/json:
+            application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 components:

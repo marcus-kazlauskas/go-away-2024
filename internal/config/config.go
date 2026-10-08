@@ -76,13 +76,13 @@ func Fatal(err error) {
 func loadConfig(filePath string) (*Config, error) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("error reading config file: %v", err)
+		return nil, fmt.Errorf("error reading config file: %w", err)
 	}
 
 	var config Config
 	err = yaml.Unmarshal(data, &config)
 	if err != nil {
-		return nil, fmt.Errorf("error unmarshaling YAML: %v", err)
+		return nil, fmt.Errorf("error unmarshaling YAML: %w", err)
 	}
 
 	return &config, nil

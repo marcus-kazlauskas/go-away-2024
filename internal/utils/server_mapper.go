@@ -43,6 +43,6 @@ func RequestWithResultEntityToTaskCreatedResponse(e database.RequestWithResultEn
 		StartedAt:   e.StartedAt,
 		CompletedAt: e.CompletedAt,
 		Result:      e.Result,
-		Message:     yearDayPartToMessage(e.Day, e.Part, e.Year),
+		Message:     yearDayPartToMessage(e.Year, e.Day, e.Part),
 	}
 }

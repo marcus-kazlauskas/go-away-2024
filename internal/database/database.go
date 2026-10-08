@@ -21,6 +21,6 @@ func Connect(cfg *config.Config) *sqlx.DB {
 	)
 
 	db := sqlx.MustConnect("pgx", dsn)
-	log.Infof("Connected to database: %s", dsn)
+	log.Infof("Connected to database: host=%s port=%s dbname=%s", cfg.Database.Host, cfg.Database.Port, cfg.Database.Name)
 	return db
 }

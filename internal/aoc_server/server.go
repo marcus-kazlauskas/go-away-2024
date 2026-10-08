@@ -47,7 +47,7 @@ func NewServerApp(s *Server) *fiber.App {
 	}
 	swagger.Servers = nil
 
-	app := fiber.New()
+	app := fiber.New(fiber.Config{ErrorHandler: SendServerError})
 	app.Use(logger.New())
 	app.Use(middleware.OapiRequestValidator(swagger))
 	api.RegisterHandlers(app, s)
@@ -57,9 +57,12 @@ func NewServerApp(s *Server) *fiber.App {
 func SendServerError(c *fiber.Ctx, err error) error {
 	var code int
 	var message string
+	var fiberErr *fiber.Error
 	switch {
 	case errors.Is(err, sql.ErrNoRows):
 		code = http.StatusNotFound
+	case errors.As(err, &fiberErr):
+		code = fiberErr.Code
 	default:
 		code = http.StatusInternalServerError
 	}
@@ -118,7 +121,7 @@ func (s *Server) uploadPuzzleInput(c *fiber.Ctx, p api.PostTaskParams, id int64)
 	}()
 
 	if _, err = tmpFile.Write(c.Body()); err != nil {
-		log.Error(err)
+		return pattern, err
 	}
 
 	err = s.minioClient.UploadPuzzleInput(pattern, tmpFile)

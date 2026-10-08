@@ -6,6 +6,15 @@
 
 Version 1.0.0
 
+Requirements:
+
+- ***Go 1.26*** or higher
+- ***Podman Desktop*** (or Docker Desktop)
+- [***Goose***](https://github.com/pressly/goose)
+- [***Task***](https://taskfile.dev/docs/installation)
+- [***golangci-lint***](https://golangci-lint.run/docs/welcome/install/local/)
+- [***oapi-codegen***](https://github.com/oapi-codegen/oapi-codegen)
+
 ### Supported puzzles
 
 | Year of the event | Days with part 1 | Days with part 2 |
@@ -20,19 +29,13 @@ Openapi description of supported methods is located in [openapi-go-away-2024.yml
 You can generate actual API interface:
 
 ```shell
-go get -tool github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
 cd internal/api
-go tool oapi-codegen -config api-codegen.yml ../../api/openapi-go-away-2024.yml
-go tool oapi-codegen -config types-codegen.yml ../../api/openapi-go-away-2024.yml
+oapi-codegen -config api-codegen.yml ../../api/openapi-go-away-2024.yml
+oapi-codegen -config types-codegen.yml ../../api/openapi-go-away-2024.yml
 cd ../..
 ```
 
 ### Launch application
-
-Requirements:
-
-- ***Go 1.25*** or higher
-- ***Podman Desktop*** (or Docker Desktop)
 
 Run local environment:
 
@@ -46,8 +49,7 @@ Apply all available migrations:
 
 ```shell
 cd db-migrations
-go get -tool github.com/pressly/goose/v3/cmd/goose@latest
-go tool goose up
+goose up
 cd ..
 ```
 

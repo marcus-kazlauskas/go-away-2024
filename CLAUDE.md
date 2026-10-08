@@ -8,7 +8,7 @@ A Go REST service that solves Advent of Code puzzles asynchronously. A client up
 
 ## Commands
 
-Requires Go 1.26+, podman (or docker), and `goose`, `golangci-lint` (v2) and `oapi-codegen` installed as standalone binaries. They are not `go tool` dependencies in `go.mod`.
+Requires Go 1.26+, podman (or docker), and `goose`, `golangci-lint` v2, `oapi-codegen` v2 and `task` installed as standalone binaries. They are not `go tool` dependencies in `go.mod`.
 
 Several paths are relative, so commands must be run from specific directories:
 
@@ -30,11 +30,11 @@ go test ./internal/puzzles -run 'TestPuzzles/Year_2025_day_6_part_1'   # single 
 golangci-lint run          # config: .golangci.yml (v2)
 golangci-lint fmt          # gofmt + goimports
 
-# Regenerate API code after editing api/openapi-go-away-2024.yml — run from internal/api
-cd internal/api
-oapi-codegen -config api-codegen.yml ../../api/openapi-go-away-2024.yml
-oapi-codegen -config types-codegen.yml ../../api/openapi-go-away-2024.yml
+# Regenerate API code after editing api/openapi-go-away-2024.yml (directives in internal/api/generate.go)
+go generate ./...
 ```
+
+The same steps are in `Taskfile.yml` ([Task](https://taskfile.dev) v3, run from the repo root): `task` / `task build` (generate → lint → test → `go build ./...`), plus `task generate`, `task lint`, `task test` and `task test:unit` (`internal/puzzles` only, no infra needed).
 
 `internal/database` tests are integration tests. They need the local Postgres running with migrations applied, and they load config from `config.TEST_PATH` (`../../properties/go-away-2024.yml`). `internal/puzzles` tests are pure and open their `*_test.txt` fixtures by relative path.
 

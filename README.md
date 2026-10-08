@@ -12,8 +12,8 @@ Requirements:
 - ***Podman Desktop*** (or Docker Desktop)
 - [***Goose***](https://github.com/pressly/goose)
 - [***Task***](https://taskfile.dev/docs/installation)
-- [***golangci-lint***](https://golangci-lint.run/docs/welcome/install/local/)
-- [***oapi-codegen***](https://github.com/oapi-codegen/oapi-codegen)
+- [***golangci-lint***](https://golangci-lint.run/docs/welcome/install/local/) v2
+- [***oapi-codegen***](https://github.com/oapi-codegen/oapi-codegen) v2
 
 ### Supported puzzles
 
@@ -24,15 +24,24 @@ Requirements:
 
 ### API description
 
-Openapi description of supported methods is located in [openapi-go-away-2024.yml](api/openapi-go-away-2024.yml).
+OpenAPI description of supported methods is located in [openapi-go-away-2024.yml](api/openapi-go-away-2024.yml).
 
 You can generate actual API interface:
 
 ```shell
-cd internal/api
-oapi-codegen -config api-codegen.yml ../../api/openapi-go-away-2024.yml
-oapi-codegen -config types-codegen.yml ../../api/openapi-go-away-2024.yml
-cd ../..
+go generate ./...
+```
+
+### Build
+
+Tasks are described in [Taskfile.yml](Taskfile.yml) and run from the project root:
+
+```shell
+task              # generate, lint, test and build
+task generate     # regenerate API code
+task lint         # golangci-lint run
+task test         # all tests (database tests need local environment and migrations)
+task test:unit    # puzzle tests only, no local environment needed
 ```
 
 ### Launch application
@@ -54,6 +63,7 @@ cd ..
 ```
 
 Start application:
+
 ```shell
 cd cmd
 go run main.go

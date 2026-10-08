@@ -1,0 +1,43 @@
+version: '3'
+
+tasks:
+  default:
+    desc: "Full build: generate, lint, test, build"
+    cmds:
+      - task: build
+
+  generate:
+    desc: Regenerate code (oapi-codegen for internal/api)
+    sources:
+      - api/openapi-go-away-2024.yml
+      - internal/api/*-codegen.yml
+    generates:
+      - internal/api/*.gen.go
+    cmds:
+      - go generate ./...
+
+  lint:
+    desc: Run golangci-lint
+    deps: [generate]
+    cmds:
+      - golangci-lint run
+
+  test:
+    desc: Run all tests (internal/database needs local Postgres with migrations applied)
+    deps: [generate]
+    cmds:
+      - go test ./...
+
+  test:unit:
+    desc: Run tests that need no infrastructure
+    deps: [generate]
+    cmds:
+      - go test ./internal/puzzles/...
+
+  build:
+    desc: Generate, lint, test and build
+    cmds:
+      - task: generate
+      - task: lint
+      - task: test
+      - go build ./...

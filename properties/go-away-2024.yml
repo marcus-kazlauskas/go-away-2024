@@ -1,6 +1,7 @@
 server:
   host: localhost
   port: 8090
+  shutdown-timeout: 5s
 database:
   driver: postgres
   host: localhost

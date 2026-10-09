@@ -36,6 +36,10 @@ func NewKafkaConnection(cfg *config.Config) *KafkaConnection {
 	}
 }
 
+func (k *KafkaConnection) Close() error {
+	return k.conn.Close()
+}
+
 func (k *KafkaConnection) WriteTask(msg *TaskMessage) error {
 	if err := k.conn.SetWriteDeadline(time.Now().Add(k.writeDeadline)); err != nil {
 		log.Error(err)

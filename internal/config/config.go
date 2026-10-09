@@ -20,8 +20,9 @@ type Config struct {
 }
 
 type ServerConfig struct {
-	Host string `yaml:"host"`
-	Port string `yaml:"port"`
+	Host            string `yaml:"host"`
+	Port            string `yaml:"port"`
+	ShutdownTimeout string `yaml:"shutdown-timeout"`
 }
 
 type DatabaseConfig struct {

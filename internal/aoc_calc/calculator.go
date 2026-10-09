@@ -2,6 +2,7 @@ package aoc_calc
 
 import (
 	"bufio"
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -45,9 +46,16 @@ func NewCalculator(
 	}
 }
 
-func (c *Calculator) Start() error {
+// Start solves tasks until ctx is cancelled. The current task is always finished
+// and saved before returning.
+func (c *Calculator) Start(ctx context.Context) error {
 	for {
-		time.Sleep(c.sleep)
+		select {
+		case <-ctx.Done():
+			log.Info("Calculator stopped")
+			return nil
+		case <-time.After(c.sleep):
+		}
 
 		// read new puzzle from kafka
 		msg, err := c.kafkaConnection.ReadTask()

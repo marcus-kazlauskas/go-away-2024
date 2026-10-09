@@ -26,12 +26,6 @@ Requirements:
 
 OpenAPI description of supported methods is located in [openapi-go-away-2024.yml](api/openapi-go-away-2024.yml).
 
-You can generate actual API interface:
-
-```shell
-go generate ./...
-```
-
 ### Launch application
 
 Run local environment:

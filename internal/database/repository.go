@@ -17,6 +17,10 @@ func NewRepository(cfg *config.Config) *Repository {
 	}
 }
 
+func (r *Repository) Close() error {
+	return r.db.Close()
+}
+
 func (r *Repository) SaveRequest(request RequestEntity) (id int64, err error) {
 	err = r.db.Get(
 		&id,

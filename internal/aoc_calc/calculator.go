@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"go-away-2024/internal/api"
-	"go-away-2024/internal/config"
 	"go-away-2024/internal/database"
 	"go-away-2024/internal/kafka"
 	"go-away-2024/internal/minio"
@@ -16,93 +15,103 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2/log"
-	kafka_go "github.com/segmentio/kafka-go"
 )
 
+const fetchRetry = time.Second
+
 type Calculator struct {
-	repository      *database.Repository
-	minioClient     *minio.MinioClient
-	kafkaConnection *kafka.KafkaConnection
-	sleep           time.Duration
+	repository  *database.Repository
+	minioClient *minio.MinioClient
+	kafkaReader *kafka.TaskReader
 }
 
 func NewCalculator(
 	repo *database.Repository,
 	minio *minio.MinioClient,
-	kafka *kafka.KafkaConnection,
-	cfg *config.Config,
+	kafka *kafka.TaskReader,
 ) *Calculator {
-	sleep, err := time.ParseDuration(cfg.Calculator.Sleep)
-	if err != nil {
-		config.Fatal(err)
-	}
-
-	log.Infof("Calculator created: sleep=%.1fs", sleep.Seconds())
+	log.Info("Calculator created")
 	return &Calculator{
-		repository:      repo,
-		minioClient:     minio,
-		kafkaConnection: kafka,
-		sleep:           sleep,
+		repository:  repo,
+		minioClient: minio,
+		kafkaReader: kafka,
 	}
 }
 
-// Start solves tasks until ctx is cancelled. The current task is always finished
-// and saved before returning.
+// Start solves tasks until ctx is cancelled. The current task is always finished,
+// saved and committed before returning.
 func (c *Calculator) Start(ctx context.Context) error {
 	for {
+		// wait for new puzzle from kafka
+		task, msg, err := c.kafkaReader.FetchTask(ctx)
+		// a task fetched at the moment of cancellation is not committed and is read again after restart
 		select {
 		case <-ctx.Done():
 			log.Info("Calculator stopped")
 			return nil
-		case <-time.After(c.sleep):
+		default:
 		}
 
-		// read new puzzle from kafka
-		msg, err := c.kafkaConnection.ReadTask()
+		// the reader reconnects by itself, so kafka errors are transient
 		if err != nil {
-			if !errors.Is(err, kafka_go.RequestTimedOut) {
-				return err
+			log.Errorf("Couldn't read task, retry in %.0fs: %v", fetchRetry.Seconds(), err)
+			select {
+			case <-ctx.Done():
+			case <-time.After(fetchRetry):
 			}
 			continue
 		}
 
-		// check if puzzle is already solved
-		res, err := c.repository.GetResult(msg.Id)
-		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				log.Infof("Task id=%d is unknown", msg.Id)
-				continue
-			}
+		if err := c.solve(task); err != nil {
 			return err
 		}
-		if res.Status == fmt.Sprint(api.COMPLETED) || res.Status == fmt.Sprint(api.ERROR) {
-			log.Infof("Task id=%d is already solved", msg.Id)
-			continue
-		}
 
-		// solve puzzle
-		startedAt := time.Now()
-		ans, err := c.calculate(msg)
-		completedAt := time.Now()
-
-		// save result
-		res.StartedAt = &startedAt
-		res.CompletedAt = &completedAt
-		if err != nil {
-			log.Infof("Couldn't solve task id=%d: %v", msg.Id, err)
-			errorResult := fmt.Sprintf("%v", err)
-			res.Result = &errorResult
-			res.Status = fmt.Sprint(api.ERROR)
-		} else {
-			res.Result = ans
-			res.Status = fmt.Sprint(api.COMPLETED)
+		// commit only after the result is saved, so a crash means solving it again, not losing it;
+		// an uncommitted task is read again and skipped as already solved
+		if err := c.kafkaReader.Commit(context.WithoutCancel(ctx), msg); err != nil {
+			log.Errorf("Couldn't commit task id=%d: %v", task.Id, err)
 		}
-		err = c.repository.SetResult(res)
-		if err != nil {
-			return err
-		}
-		log.Infof("Solved task id=%d result='%s' status=%s", res.RequestId, *res.Result, res.Status)
 	}
+}
+
+func (c *Calculator) solve(msg *kafka.TaskMessage) error {
+	// check if puzzle is already solved
+	res, err := c.repository.GetResult(msg.Id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			log.Infof("Task id=%d is unknown", msg.Id)
+			return nil
+		}
+		return err
+	}
+	if res.Status == fmt.Sprint(api.COMPLETED) || res.Status == fmt.Sprint(api.ERROR) {
+		log.Infof("Task id=%d is already solved", msg.Id)
+		return nil
+	}
+
+	// solve puzzle
+	startedAt := time.Now()
+	ans, err := c.calculate(msg)
+	completedAt := time.Now()
+
+	// save result
+	res.StartedAt = &startedAt
+	res.CompletedAt = &completedAt
+	if err != nil {
+		log.Infof("Couldn't solve task id=%d: %v", msg.Id, err)
+		errorResult := fmt.Sprintf("%v", err)
+		res.Result = &errorResult
+		res.Status = fmt.Sprint(api.ERROR)
+	} else {
+		res.Result = ans
+		res.Status = fmt.Sprint(api.COMPLETED)
+	}
+	err = c.repository.SetResult(res)
+	if err != nil {
+		return err
+	}
+	log.Infof("Solved task id=%d result='%s' status=%s", res.RequestId, *res.Result, res.Status)
+	return nil
 }
 
 func (c *Calculator) calculate(msg *kafka.TaskMessage) (*string, error) {

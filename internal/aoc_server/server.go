@@ -1,6 +1,7 @@
 package aoc_server
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -22,21 +23,21 @@ import (
 var _ api.ServerInterface = (*Server)(nil)
 
 type Server struct {
-	repository      *database.Repository
-	minioClient     *minio.MinioClient
-	kafkaConnection *kafka.KafkaConnection
+	repository  *database.Repository
+	minioClient *minio.MinioClient
+	kafkaWriter *kafka.TaskWriter
 }
 
 func NewServer(
 	repo *database.Repository,
 	minio *minio.MinioClient,
-	kafka *kafka.KafkaConnection,
+	kafka *kafka.TaskWriter,
 ) *Server {
 	log.Info("Server created")
 	return &Server{
-		repository:      repo,
-		minioClient:     minio,
-		kafkaConnection: kafka,
+		repository:  repo,
+		minioClient: minio,
+		kafkaWriter: kafka,
 	}
 }
 
@@ -89,7 +90,7 @@ func (s *Server) PostTask(c *fiber.Ctx, params api.PostTaskParams) error {
 	}
 
 	request.S3Link = &s3Link
-	err = s.writeTask(request)
+	err = s.writeTask(c.UserContext(), request)
 	if err != nil {
 		return err
 	}
@@ -132,13 +133,13 @@ func (s *Server) uploadPuzzleInput(c *fiber.Ctx, p api.PostTaskParams, id int64)
 	return pattern, s.repository.UpdateRequestS3Link(id, pattern)
 }
 
-func (s *Server) writeTask(rq database.RequestEntity) error {
-	msg := utils.RequestEntityToTaskMessage(rq)
-	if err := s.kafkaConnection.WriteTask(&msg); err != nil {
+func (s *Server) writeTask(ctx context.Context, rq database.RequestEntity) error {
+	if err := s.repository.SaveResult(rq.Id); err != nil {
 		return err
 	}
 
-	return s.repository.SaveResult(rq.Id)
+	msg := utils.RequestEntityToTaskMessage(rq)
+	return s.kafkaWriter.WriteTask(ctx, &msg)
 }
 
 // Get task status

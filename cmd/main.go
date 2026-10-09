@@ -38,9 +38,10 @@ func run() error {
 
 	repository := database.NewRepository(config)
 	minio := minio.NewClient(config)
-	kafka := kafka.NewKafkaConnection(config)
+	kafkaWriter := kafka.NewTaskWriter(config)
+	kafkaReader := kafka.NewTaskReader(config)
 
-	adventOfCodeServer := aoc_server.NewServer(repository, minio, kafka)
+	adventOfCodeServer := aoc_server.NewServer(repository, minio, kafkaWriter)
 	app := aoc_server.NewServerApp(adventOfCodeServer)
 	addr := net.JoinHostPort(config.Server.Host, config.Server.Port)
 	ln, err := net.Listen("tcp", addr)
@@ -48,7 +49,7 @@ func run() error {
 		return err
 	}
 
-	adventOfCodeCalculator := aoc_calc.NewCalculator(repository, minio, kafka, config)
+	adventOfCodeCalculator := aoc_calc.NewCalculator(repository, minio, kafkaReader)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
@@ -67,7 +68,10 @@ func run() error {
 
 	err = g.Wait()
 
-	if err := kafka.Close(); err != nil {
+	if err := kafkaWriter.Close(); err != nil {
+		log.Error(err)
+	}
+	if err := kafkaReader.Close(); err != nil {
 		log.Error(err)
 	}
 	if err := repository.Close(); err != nil {

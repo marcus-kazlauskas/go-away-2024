@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go-away-2024/internal/api"
 	"go-away-2024/internal/config"
+	"slices"
 	"testing"
 	"time"
 
@@ -73,6 +74,13 @@ func TestRepository(t *testing.T) {
 		a.Nil(err)
 	})
 
+	t.Run("Should find created request", func(t *testing.T) {
+		requests, err := repository.GetCreatedRequests()
+
+		a.Nil(err)
+		a.True(containsRequest(requests, requestEntity.Id))
+	})
+
 	t.Run("Should set result", func(t *testing.T) {
 		resultEntity.Status = status
 		resultEntity.Result = &result
@@ -93,6 +101,13 @@ func TestRepository(t *testing.T) {
 		a.Equal(*resultEntity.Result, *res.Result)
 		a.Equal(resultEntity.StartedAt.Local(), res.StartedAt.Local())
 		a.Equal(resultEntity.CompletedAt.Local(), res.CompletedAt.Local())
+	})
+
+	t.Run("Should not find solved request as created", func(t *testing.T) {
+		requests, err := repository.GetCreatedRequests()
+
+		a.Nil(err)
+		a.False(containsRequest(requests, requestEntity.Id))
 	})
 
 	t.Run("Should find saved request with result", func(t *testing.T) {
@@ -117,6 +132,10 @@ func TestRepository(t *testing.T) {
 
 		a.NotNil(err)
 	})
+}
+
+func containsRequest(requests []RequestEntity, id int64) bool {
+	return slices.ContainsFunc(requests, func(rq RequestEntity) bool { return rq.Id == id })
 }
 
 func DeleteRequest(db *sqlx.DB, id int64) {

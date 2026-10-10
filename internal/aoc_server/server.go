@@ -142,6 +142,28 @@ func (s *Server) writeTask(ctx context.Context, rq database.RequestEntity) error
 	return s.kafkaWriter.WriteTask(ctx, &msg)
 }
 
+// RepublishTasks sends tasks that may have failed to reach Kafka again
+func (s *Server) RepublishTasks(ctx context.Context) {
+	requests, err := s.repository.GetCreatedRequests()
+	if err != nil {
+		log.Errorf("Couldn't find tasks to republish: %v", err)
+		return
+	}
+	if len(requests) == 0 {
+		return
+	}
+
+	for i, rq := range requests {
+		msg := utils.RequestEntityToTaskMessage(rq)
+		// kafka is likely unavailable, the rest would fail too
+		if err := s.kafkaWriter.WriteTask(ctx, &msg); err != nil {
+			log.Errorf("Couldn't republish %d of %d tasks: %v", len(requests)-i, len(requests), err)
+			return
+		}
+	}
+	log.Infof("Republished %d tasks", len(requests))
+}
+
 // Get task status
 // (GET /task/{id})
 func (s *Server) GetTask(c *fiber.Ctx, id int64) error {

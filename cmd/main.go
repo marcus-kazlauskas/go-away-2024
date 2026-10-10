@@ -53,6 +53,9 @@ func run() error {
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+
+	adventOfCodeServer.RepublishTasks(ctx)
+
 	g, ctx := errgroup.WithContext(ctx)
 
 	g.Go(func() error { return app.Listener(ln) })

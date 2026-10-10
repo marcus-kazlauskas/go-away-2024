@@ -28,6 +28,11 @@ func NewTaskReader(cfg *config.Config) *TaskReader {
 		MaxBytes:    cfg.Kafka.ReadBatchMaxSize,
 		MaxWait:     maxWait,
 		ErrorLogger: kafka.LoggerFunc(log.Errorf),
+		// after a broker restart the reader rejoins in ~1s instead of ~15s with defaults (30s, 30s, 5s);
+		// Close waits for a pending join, so shutdown is bounded by RebalanceTimeout
+		SessionTimeout:   10 * time.Second,
+		RebalanceTimeout: 10 * time.Second,
+		JoinGroupBackoff: time.Second,
 	})
 
 	log.Infof("Kafka reader created: address=%s, topic=%s, group=%s", address(cfg), cfg.Kafka.Topic, cfg.Kafka.GroupId)

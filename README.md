@@ -4,7 +4,7 @@
 
 ## REST-service for puzzles solving
 
-Version 1.0.0
+Version 2.0.0
 
 Requirements:
 
@@ -25,12 +25,6 @@ Requirements:
 ### API description
 
 OpenAPI description of supported methods is located in [openapi-go-away-2024.yml](api/openapi-go-away-2024.yml).
-
-You can generate actual API interface:
-
-```shell
-go generate ./...
-```
 
 ### Launch application
 

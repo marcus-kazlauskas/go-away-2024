@@ -17,6 +17,10 @@ func NewRepository(cfg *config.Config) *Repository {
 	}
 }
 
+func (r *Repository) Close() error {
+	return r.db.Close()
+}
+
 func (r *Repository) SaveRequest(request RequestEntity) (id int64, err error) {
 	err = r.db.Get(
 		&id,
@@ -83,6 +87,25 @@ func (r *Repository) GetResult(requestId int64) (res ResultEntity, err error) {
 	return res, err
 }
 
+func (r *Repository) GetCreatedRequests() (requests []RequestEntity, err error) {
+	err = r.db.Select(
+		&requests,
+		`select
+			rq.id as id,
+			rq.year as year,
+			rq.day as day,
+			rq.part as part,
+			rq.created_at as created_at,
+			rq.s3_link as s3_link
+		from request rq
+		join result res
+			on rq.id = res.request_id
+		where res.status = 'CREATED'
+		order by rq.id`,
+	)
+	return requests, err
+}
+
 func (r *Repository) GetRequestWithResult(id int64) (rqRes RequestWithResultEntity, err error) {
 	err = r.db.Get(
 		&rqRes,
@@ -98,7 +121,7 @@ func (r *Repository) GetRequestWithResult(id int64) (rqRes RequestWithResultEnti
 			res.result as result,
 			rq.s3_link as s3_link
 		from request rq
-		left join result res 
+		join result res
 			on rq.id = res.request_id
 		where rq.id = $1`,
 		id,

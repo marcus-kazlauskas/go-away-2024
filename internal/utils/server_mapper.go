@@ -30,15 +30,9 @@ func yearDayPartToMessage(year int32, day int32, part int32) string {
 }
 
 func RequestWithResultEntityToTaskCreatedResponse(e database.RequestWithResultEntity) api.TaskResponse {
-	var status api.TaskResponseStatus
-	if e.Status == nil {
-		status = api.CREATED
-	} else {
-		status = api.TaskResponseStatus(*e.Status)
-	}
 	return api.TaskResponse{
 		Id:          e.RequestId,
-		Status:      status,
+		Status:      api.TaskResponseStatus(e.Status),
 		CreatedAt:   e.CreatedAt,
 		StartedAt:   e.StartedAt,
 		CompletedAt: e.CompletedAt,

@@ -10,6 +10,7 @@ require (
 	github.com/oapi-codegen/runtime v1.7.0
 	github.com/segmentio/kafka-go v0.4.51
 	github.com/stretchr/testify v1.12.1
+	golang.org/x/sync v0.22.0
 )
 
 require (
@@ -30,7 +31,6 @@ require (
 	github.com/tinylib/msgp v1.6.4 // indirect
 	github.com/zeebo/xxh3 v1.1.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/sync v0.22.0 // indirect
 	gopkg.in/ini.v1 v1.67.3 // indirect
 )
 

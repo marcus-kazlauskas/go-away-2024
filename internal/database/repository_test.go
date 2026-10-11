@@ -1,9 +1,11 @@
 package database
 
 import (
+	"database/sql"
 	"fmt"
 	"go-away-2024/internal/api"
 	"go-away-2024/internal/config"
+	"slices"
 	"testing"
 	"time"
 
@@ -67,10 +69,23 @@ func TestRepository(t *testing.T) {
 		requestEntity.S3Link = &s3Link
 	})
 
+	t.Run("Should not find request without result", func(t *testing.T) {
+		_, err := repository.GetRequestWithResult(requestEntity.Id)
+
+		a.ErrorIs(err, sql.ErrNoRows)
+	})
+
 	t.Run("Should save result", func(t *testing.T) {
 		err := repository.SaveResult(resultEntity.RequestId)
 
 		a.Nil(err)
+	})
+
+	t.Run("Should find created request", func(t *testing.T) {
+		requests, err := repository.GetCreatedRequests()
+
+		a.Nil(err)
+		a.True(containsRequest(requests, requestEntity.Id))
 	})
 
 	t.Run("Should set result", func(t *testing.T) {
@@ -95,6 +110,13 @@ func TestRepository(t *testing.T) {
 		a.Equal(resultEntity.CompletedAt.Local(), res.CompletedAt.Local())
 	})
 
+	t.Run("Should not find solved request as created", func(t *testing.T) {
+		requests, err := repository.GetCreatedRequests()
+
+		a.Nil(err)
+		a.False(containsRequest(requests, requestEntity.Id))
+	})
+
 	t.Run("Should find saved request with result", func(t *testing.T) {
 		result, err := repository.GetRequestWithResult(requestEntity.Id)
 
@@ -107,7 +129,7 @@ func TestRepository(t *testing.T) {
 		a.Equal(requestEntity.CreatedAt.Local(), result.CreatedAt.Local())
 		a.Equal(resultEntity.StartedAt.Local(), result.StartedAt.Local())
 		a.Equal(resultEntity.CompletedAt.Local(), result.CompletedAt.Local())
-		a.Equal(resultEntity.Status, *result.Status)
+		a.Equal(resultEntity.Status, result.Status)
 		a.Equal(resultEntity.Result, result.Result)
 		a.Equal(*requestEntity.S3Link, *result.S3Link)
 	})
@@ -117,6 +139,10 @@ func TestRepository(t *testing.T) {
 
 		a.NotNil(err)
 	})
+}
+
+func containsRequest(requests []RequestEntity, id int64) bool {
+	return slices.ContainsFunc(requests, func(rq RequestEntity) bool { return rq.Id == id })
 }
 
 func DeleteRequest(db *sqlx.DB, id int64) {

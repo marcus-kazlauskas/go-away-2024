@@ -8,7 +8,7 @@ A Go REST service that solves Advent of Code puzzles asynchronously. A client up
 
 ## Commands
 
-Requires Go 1.26+, podman (or docker), and `goose`, `golangci-lint` v2, `oapi-codegen` v2 and `task` installed as standalone binaries. They are not `go tool` dependencies in `go.mod`.
+Requires Go 1.26+, podman (or docker), and `goose`, `golangci-lint` v2, `oapi-codegen` v2 and `task` v3 installed as standalone binaries. They are not `go tool` dependencies in `go.mod`.
 
 Several paths are relative, so commands must be run from specific directories:
 
@@ -34,7 +34,7 @@ golangci-lint fmt          # gofmt + goimports
 go generate ./...
 ```
 
-`Taskfile.yml` (Task v3, run from the repo root) wraps these steps; see `task --list`. `task` runs generate → lint → test → build, the same check as CI (`.github/workflows/verify-pr.yaml`): run it before finishing a change. `task test` and `task run` apply migrations to the local DB first; `task test:unit` is the only one that needs no local environment.
+`Taskfile.yml` (run from the repo root) wraps these steps; see `task --list`. `task` runs generate → lint → test → build, the same check as CI (`.github/workflows/verify-pr.yaml`): run it before finishing a change. `task test` and `task run` apply migrations to the local DB first; `task test:unit` is the only one that needs no local environment.
 
 `internal/database` tests are integration tests. They need the local Postgres running with migrations applied (`task test` applies them), and they load config from `config.TEST_PATH` (`../../properties/go-away-2024.yml`). `internal/puzzles` tests are pure and open their `*_test.txt` fixtures by relative path.
 
@@ -42,10 +42,10 @@ Imports: keep `go-away-2024/...` in the same block as stdlib (the existing style
 
 ## Architecture
 
-One process (`cmd/main.go`) runs two goroutines; the first error from either kills the process (no graceful shutdown).
+One process (`cmd/main.go`) runs the server and the calculator in an `errgroup`. SIGINT/SIGTERM or the first error from either cancels the shared context: the server finishes in-flight requests (`server.shutdown-timeout`), the calculator finishes and saves the current task, then Kafka and the DB are closed. The process exits with 1 if the shutdown was caused by an error.
 
 - **HTTP server** (`internal/aoc_server`, Fiber): `POST /task/create` stores the request in Postgres, the input in MinIO, and publishes a task to Kafka; `GET /task/{id}` reads request + result. Requests are validated against the OpenAPI spec embedded in `internal/api`. All errors go through `SendServerError` (the app's `ErrorHandler`) and are returned as JSON `ErrorResponse`, so handlers just `return err`.
-- **Calculator** (`internal/aoc_calc`): polls Kafka, downloads the input from MinIO, runs the solver from `internal/puzzles`, and writes the answer or error to the `result` table.
+- **Calculator** (`internal/aoc_calc`): reads tasks from Kafka as a consumer group, downloads the input from MinIO, runs the solver from `internal/puzzles`, and writes the answer or error to the `result` table. The Kafka offset is committed only after the result is saved, so a task can be delivered twice (it is then skipped as already solved) but is not lost. The server therefore creates the `result` row before publishing the task. If publishing fails, the task stays `CREATED`: on start, before serving, the server republishes all `CREATED` tasks (`Server.RepublishTasks`); ones that were already queued are delivered twice and skipped.
 
 `internal/api` is generated (`*.gen.go`): never edit it by hand, regenerate it from the spec.
 

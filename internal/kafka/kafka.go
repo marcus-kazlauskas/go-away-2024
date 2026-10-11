@@ -1,12 +1,8 @@
 package kafka
 
 import (
-	"context"
 	"go-away-2024/internal/config"
 	"net"
-
-	"github.com/gofiber/fiber/v2/log"
-	kafka "github.com/segmentio/kafka-go"
 )
 
 type TaskMessage struct {
@@ -17,12 +13,6 @@ type TaskMessage struct {
 	S3Link *string `json:"s3_link"`
 }
 
-func Connect(cfg *config.Config) *kafka.Conn {
-	address := net.JoinHostPort(cfg.Kafka.Host, cfg.Kafka.Port)
-	conn, err := kafka.DialLeader(context.Background(), cfg.Kafka.Network, address, cfg.Kafka.Topic, cfg.Kafka.Partition)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Infof("Connection to kafka created: address=%s", address)
-	return conn
+func address(cfg *config.Config) string {
+	return net.JoinHostPort(cfg.Kafka.Host, cfg.Kafka.Port)
 }

@@ -30,7 +30,7 @@ type RequestWithResultEntity struct {
 	CreatedAt   time.Time  `db:"created_at"`
 	StartedAt   *time.Time `db:"started_at"`
 	CompletedAt *time.Time `db:"completed_at"`
-	Status      *string    `db:"status"`
+	Status      string     `db:"status"`
 	Result      *string    `db:"result"`
 	S3Link      *string    `db:"s3_link"`
 }

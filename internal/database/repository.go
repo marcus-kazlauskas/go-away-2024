@@ -121,7 +121,7 @@ func (r *Repository) GetRequestWithResult(id int64) (rqRes RequestWithResultEnti
 			res.result as result,
 			rq.s3_link as s3_link
 		from request rq
-		left join result res 
+		join result res
 			on rq.id = res.request_id
 		where rq.id = $1`,
 		id,

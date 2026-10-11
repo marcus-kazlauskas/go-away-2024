@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"fmt"
 	"go-away-2024/internal/api"
 	"go-away-2024/internal/config"
@@ -68,6 +69,12 @@ func TestRepository(t *testing.T) {
 		requestEntity.S3Link = &s3Link
 	})
 
+	t.Run("Should not find request without result", func(t *testing.T) {
+		_, err := repository.GetRequestWithResult(requestEntity.Id)
+
+		a.ErrorIs(err, sql.ErrNoRows)
+	})
+
 	t.Run("Should save result", func(t *testing.T) {
 		err := repository.SaveResult(resultEntity.RequestId)
 
@@ -122,7 +129,7 @@ func TestRepository(t *testing.T) {
 		a.Equal(requestEntity.CreatedAt.Local(), result.CreatedAt.Local())
 		a.Equal(resultEntity.StartedAt.Local(), result.StartedAt.Local())
 		a.Equal(resultEntity.CompletedAt.Local(), result.CompletedAt.Local())
-		a.Equal(resultEntity.Status, *result.Status)
+		a.Equal(resultEntity.Status, result.Status)
 		a.Equal(resultEntity.Result, result.Result)
 		a.Equal(*requestEntity.S3Link, *result.S3Link)
 	})
